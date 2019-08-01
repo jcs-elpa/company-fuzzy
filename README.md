@@ -6,6 +6,21 @@
 > Fuzzy matching for `company-mode'
 
 
+## Differences from other alternatives
+
+* [company-ycmd](https://github.com/abingham/emacs-ycmd)
+  * Using external software to provide functionalities.
+* [company-flx](https://github.com/PythonNut/company-flx)
+  * Only works inside `elisp-mode` currently.
+
+## Usage
+
+```el
+(with-eval-after-load 'company
+  (company-fuzzy-mode +1))
+```
+
+
 ## Contribution
 
 If you would like to contribute to this project, you may either
