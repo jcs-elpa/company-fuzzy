@@ -33,76 +33,107 @@
 ;;; Code:
 
 
-(defvar-local jcs-company-backends nil
-  "")
+(defgroup company-fuzzy nil
+  "Fuzzy matching for `company-mode'."
+  :prefix "company-fuzzy-"
+  :group 'tool
+  :link '(url-link :tag "Repository" "https://github.com/jcs090218/company-fuzzy"))
 
-(defvar-local jcs-company-matching-reg "")
 
-(defun jcs-company-fuzzy-match-char (backend c)
-  "Fuzzy match the candidates with character C."
+(defvar-local company-fuzzy--backends nil
+  "Record down the company local backend in current buffer.")
+
+(defvar-local company-fuzzy--matching-reg ""
+  "Record down the company current search reg/characters.")
+
+
+(defun company-fuzzy--match-char (backend c)
+  "Fuzzy match the candidates with character C and current BACKEND."
   (let ((valid-candidates (ignore-errors (funcall backend 'candidates c))))
     (if (and (listp valid-candidates)
              (stringp (nth 0 valid-candidates)))
         valid-candidates
       nil)))
 
-(defun jcs-company-fuzzy-match-char-exists-candidates (candidates c)
+(defun company-fuzzy--match-char-exists-candidates (candidates c)
   "Fuzzy match the existing CANDIDATES with character C."
   (let ((also-match-candidates '()))
     (dolist (cand candidates)
       (when (string-match-p c cand)
-        (push candidates also-match-candidates)))
+        (push cand also-match-candidates)))
     also-match-candidates))
 
-(defun jcs-company-fuzzy-match-string (backend str)
-  "Fuzzy match the candidates with string STR."
-  (let ((result-candidates nil)
-        (splitted-c (split-string str "")))
-    (dolist (c splitted-c)
-      (unless (string= c "")
-        (if result-candidates
-            (let ((current-candidates (jcs-company-fuzzy-match-char-exists-candidates result-candidates c)))
-              (setq result-candidates (append result-candidates current-candidates)))
-          (setq result-candidates (jcs-company-fuzzy-match-char backend c)))))
-    result-candidates))
+(defun company-fuzzy--match-string (backend str)
+  "Fuzzy match the candidates with string STR and current BACKEND."
+  (unless (string= str "")
+    (let* ((splitted-c (remove "" (split-string str "")))
+           (first-char (nth 0 splitted-c))
+           (result-candidates (company-fuzzy--match-char backend first-char))
+           (break-it (not result-candidates))
+           (index 1))
+      (while (and (not break-it)
+                  (< index (length splitted-c)))
+        (let ((c (nth index splitted-c)))
+          (setq result-candidates (company-fuzzy--match-char-exists-candidates result-candidates c))
+          (when (= (length result-candidates) 0)
+            (setq break-it t))
+          (setq index (1+ index))))
+      result-candidates)))
 
-(defun jcs-company-all-candidates ()
+(defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
   (let ((all-candidates '()))
-    (dolist (backend jcs-company-backends)
+    (dolist (backend company-fuzzy--backends)
       (let ((temp-candidates nil))
-        (message "--------------------------------")
-        (message "backend: %s" backend)
-        (setq temp-candidates (jcs-company-fuzzy-match-string backend jcs-company-matching-reg))
+        (setq temp-candidates (company-fuzzy--match-string backend company-fuzzy--matching-reg))
         (when temp-candidates
           (setq all-candidates (append all-candidates temp-candidates))
-          (delete-dups all-candidates)))
-      (message "all-candidates: %s" all-candidates))
+          (delete-dups all-candidates))))
     all-candidates))
 
 
-(defun jcs-company-all-other-backends (command &optional arg &rest ignored)
-  "Backend source for all other backend except this backend."
+(defun company-fuzzy-all-other-backends (command &optional arg &rest ignored)
+  "Backend source for all other backend except this backend, COMMAND, ARG, IGNORED."
   (interactive (list 'interactive))
   (cl-case command
-    (interactive (company-begin-backend 'jcs-company-all-other-backends))
+    (interactive (company-begin-backend 'company-fuzzy-all-other-backends))
     (prefix (and (not (company-in-string-or-comment))
                  (company-grab-symbol)))
     (candidates
-     (setq jcs-company-matching-reg arg)
-     (cl-remove-if-not
-      (lambda (c)
-        (let ((match-reg (if (string= arg "") ".*" (concat "[" arg "]"))))
-          ;; NOTE: Fuzzy matching algorithm here.
-          (string-match-p match-reg c)))
-      (jcs-company-all-candidates)))))
+     (setq company-fuzzy--matching-reg arg)
+     (company-fuzzy-all-candidates))))
 
-(defun jcs-company-setup ()
-  "Record down all other backend."
-  (interactive)
-  (unless jcs-company-backends
-    (setq jcs-company-backends company-backends)
-    (setq-local company-backends '(jcs-company-all-other-backends))))
+
+(defun company-fuzzy--enable ()
+  "Record down all other backend to `company-fuzzy--backends'."
+  (unless company-fuzzy--backends
+    (setq company-fuzzy--backends company-backends)
+    (setq-local company-backends '(company-fuzzy-all-other-backends))))
+
+(defun company-fuzzy--disable ()
+  "Revert all other backend back to `company-backends'."
+  (when company-fuzzy--backends
+    (setq-local company-backends company-fuzzy--backends)
+    (setq company-fuzzy--backends nil)))
+
+
+;;;###autoload
+(define-minor-mode company-fuzzy-mode
+  "Minor mode 'company-fuzzy-mode'."
+  :lighter " ComFuz"
+  :group company-fuzzy
+  (if company-fuzzy-mode
+      (company-fuzzy--enable)
+    (company-fuzzy--disable)))
+
+(defun company-fuzzy-turn-on-company-fuzzy-mode ()
+  "Turn on the 'company-fuzzy-mode'."
+  (company-fuzzy-mode 1))
+
+;;;###autoload
+(define-globalized-minor-mode global-company-fuzzy-mode
+  company-fuzzy-mode company-fuzzy-turn-on-company-fuzzy-mode
+  :require 'company-fuzzy)
 
 
 (provide 'company-fuzzy)
