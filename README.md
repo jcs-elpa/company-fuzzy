@@ -5,6 +5,10 @@
 # company-fuzzy
 > Fuzzy matching for `company-mode'
 
+| company-mode | With company-fuzzy |
+|:---|:---|
+|<img src="./screenshot/normal.gif"/>|<img src="with-fuzzy.gif"/>|
+
 
 Pure `elisp` fuzzy completion for `company-mode`. This plugin search through
 all the buffer local `company-backends` and fuzzy search all candidates.
