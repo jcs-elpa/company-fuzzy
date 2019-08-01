@@ -7,7 +7,7 @@
 
 | company-mode | With company-fuzzy |
 |:---|:---|
-|<img src="./screenshot/normal.gif"/>|<img src="with-fuzzy.gif"/>|
+|<img src="./screenshot/normal.gif"/>|<img src="./screenshot/with-fuzzy.gif"/>|
 
 
 Pure `elisp` fuzzy completion for `company-mode`. This plugin search through
