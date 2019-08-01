@@ -6,18 +6,27 @@
 > Fuzzy matching for `company-mode'
 
 
+Pure `elisp` fuzzy completion for `company-mode`. This plugin search through
+all the buffer local `company-backends` and fuzzy search all candidates.
+
 ## Differences from other alternatives
 
 * [company-ycmd](https://github.com/abingham/emacs-ycmd)
-  * Using external software to provide functionalities.
+  * Uses [ycmd](https://github.com/Valloric/ycmd) as backend to provide functionalities.
+  * Quite hard to config properly.
 * [company-flx](https://github.com/PythonNut/company-flx)
-  * Only works inside `elisp-mode` currently.
+  * Currently Only works with `elisp-mode`.
+
 
 ## Usage
 
+Enable for all buffers.
 ```el
-(with-eval-after-load 'company
-  (company-fuzzy-mode +1))
+(global-company-fuzzy-mode t)
+```
+Or you can just enable in specific buffer you want.
+```el
+(company-fuzzy-mode t)
 ```
 
 
