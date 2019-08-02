@@ -27,6 +27,7 @@ all the buffer local `company-backends` and fuzzy search all candidates.
   * Uses [ycmd](https://github.com/Valloric/ycmd) as backend to provide functionalities.
   * Quite hard to config properly.
 * [company-flx](https://github.com/PythonNut/company-flx)
+  * Uses library [flx](https://github.com/lewang/flx).
   * Only works with `elisp-mode` currently.
 
 
