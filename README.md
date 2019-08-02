@@ -18,8 +18,7 @@ all the buffer local `company-backends` and fuzzy search all candidates.
 
 * Work across all backends.
 * Only uses native `elisp` code.
-* Combined all backends to one backend, so all possible candidates 
-will be shown in the completion menu. (Opposite to [company-try-hard](https://github.com/Wilfred/company-try-hard))
+* Combined all backends to one backend. (Opposite to [company-try-hard](https://github.com/Wilfred/company-try-hard))
 
 
 ## Differences from other alternatives
