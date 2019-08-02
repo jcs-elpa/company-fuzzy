@@ -13,6 +13,15 @@
 Pure `elisp` fuzzy completion for `company-mode`. This plugin search through
 all the buffer local `company-backends` and fuzzy search all candidates.
 
+
+## Features
+
+* Work across all backends.
+* Only uses native `elisp` code.
+* Combined all backends to one backend, so all possible candidates 
+will be shown in the completion menu. (Opposite to [company-try-hard](https://github.com/Wilfred/company-try-hard))
+
+
 ## Differences from other alternatives
 
 * [company-ycmd](https://github.com/abingham/emacs-ycmd)
@@ -24,14 +33,20 @@ all the buffer local `company-backends` and fuzzy search all candidates.
 
 ## Usage
 
-Enable for all buffers.
+You can enable it globally by adding this line to your config 
 ```el
 (global-company-fuzzy-mode t)
 ```
-Or you can just enable in specific buffer you want.
+Or you can just enable it in any specific buffer/mode you want.
 ```el
 (company-fuzzy-mode t)
 ```
+
+Make sure you call either of these functions after all 
+`company-backends` are set and config properly. Because 
+this plugin will replace all backends to this minor mode 
+specific backend (basically take all backends away, so 
+this mode could combine all sources and do the fuzzy work).
 
 
 ## Contribution
