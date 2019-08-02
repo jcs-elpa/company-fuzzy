@@ -16,10 +16,10 @@ all the buffer local `company-backends` and fuzzy search all candidates.
 
 ## Features
 
-* Work across all backends - Any backend that gives list of string should work.
-* Only uses native `elisp` code - I personally don't prefer any external 
+* **Work across all backends** - Any backend that gives list of string should work.
+* **Only uses native `elisp` code** - I personally don't prefer any external 
 program unless is necessary.
-* Combined all backends to one backend - Opposite to [company-try-hard](https://github.com/Wilfred/company-try-hard).
+* **Combined all backends to one backend** - Opposite to [company-try-hard](https://github.com/Wilfred/company-try-hard).
 
 
 ## Differences from other alternatives
