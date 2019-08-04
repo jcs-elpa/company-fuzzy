@@ -17,9 +17,9 @@ all the buffer local `company-backends` and fuzzy search all candidates.
 ## Features
 
 * **Work across all backends** - Any backend that gives list of string should work.
-* **Only uses native `elisp` code** - I personally don't prefer any external 
+* **Only uses native `elisp` code** - I personally don't prefer any external
 program unless is necessary.
-* **Combined all backends to one backend** - Opposite to [company-try-hard](https://github.com/Wilfred/company-try-hard), 
+* **Combined all backends to one backend** - Opposite to [company-try-hard](https://github.com/Wilfred/company-try-hard),
 hence all possible candidates will be shown in the auto-complete menu.
 
 
@@ -35,7 +35,7 @@ hence all possible candidates will be shown in the auto-complete menu.
 
 ## Usage
 
-You can enable it globally by adding this line to your config 
+You can enable it globally by adding this line to your config
 ```el
 (global-company-fuzzy-mode t)
 ```
@@ -44,11 +44,25 @@ Or you can just enable it in any specific buffer/mode you want.
 (company-fuzzy-mode t)
 ```
 
-Make sure you call either of these functions after all 
-`company-backends` are set and config properly. Because 
-this plugin will replace all backends to this minor mode 
-specific backend (basically take all backends away, so 
+Make sure you call either of these functions after all
+`company-backends` are set and config properly. Because
+this plugin will replace all backends to this minor mode
+specific backend (basically take all backends away, so
 this mode could combine all sources and do the fuzzy work).
+
+### Sorting/Scoring backend
+
+There are multiple sorting algorithms for auto-completion. You can choose your 
+own backend by customize `company-fuzzy-sorting-backend` variable like this.
+
+```el
+(setq company-fuzzy-sorting-backend 'alphabetic)
+```
+
+Currently supports these values, 
+
+* *none* - Gives you the raw result.
+* *alphabetic* - Sort in the alphabetic order not including the prefix matching.
 
 
 ## Contribution
