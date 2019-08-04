@@ -62,7 +62,7 @@ own backend by customize `company-fuzzy-sorting-backend` variable like this.
 Currently supports these values, 
 
 * *none* - Gives you the raw result.
-* *alphabetic* - Sort in the alphabetic order not including the prefix matching.
+* *alphabetic* - Sort in the alphabetic, but order not including the prefix matching.
 
 
 ## Contribution
