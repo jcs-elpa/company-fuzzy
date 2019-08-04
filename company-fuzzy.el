@@ -6,7 +6,7 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Fuzzy matching for `company-mode'.
 ;; Keyword: auto auto-complete complete fuzzy matching
-;; Version: 0.1.2
+;; Version: 0.1.3
 ;; Package-Requires: ((emacs "24.3") (company "0.9.10"))
 ;; URL: https://github.com/jcs090218/company-fuzzy
 
@@ -34,11 +34,20 @@
 
 (require 'company)
 
+
 (defgroup company-fuzzy nil
   "Fuzzy matching for `company-mode'."
   :prefix "company-fuzzy-"
   :group 'tool
   :link '(url-link :tag "Repository" "https://github.com/jcs090218/company-fuzzy"))
+
+
+(defcustom company-fuzzy-sorting-backend 'alphabetic
+  "Type for sorting/scoring backend."
+  :type '(choice (const :tag "none" none)
+                 (const :tag "alphabetic" alphabetic)
+                 (const :tag "flx" flx))
+  :group 'company-fuzzy)
 
 
 (defvar-local company-fuzzy--backends nil
@@ -81,6 +90,20 @@
           (setq index (1+ index))))
       result-candidates)))
 
+(defun company-fuzzy--sort-candidates (candidates)
+  "Sort all CANDIDATES base on type of sorting backend."
+  (cl-case company-fuzzy-sorting-backend
+    ('none candidates)
+    ('alphabetic
+     (setq candidates (sort candidates #'string-lessp))
+     (let ((prefix-matches '()))
+       (dolist (cand candidates)
+         (when (string-match-p company-fuzzy--matching-reg cand)
+           (push cand prefix-matches)
+           (setq candidates (remove cand candidates))))
+       (setq candidates (append (reverse prefix-matches) candidates)))
+     candidates)))
+
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
   (let ((all-candidates '()))
@@ -109,13 +132,15 @@
   "Record down all other backend to `company-fuzzy--backends'."
   (unless company-fuzzy--backends
     (setq company-fuzzy--backends company-backends)
-    (setq-local company-backends '(company-fuzzy-all-other-backends))))
+    (setq-local company-backends '(company-fuzzy-all-other-backends))
+    (setq-local company-transformers (append company-transformers '(company-fuzzy--sort-candidates)))))
 
 (defun company-fuzzy--disable ()
   "Revert all other backend back to `company-backends'."
   (when company-fuzzy--backends
     (setq-local company-backends company-fuzzy--backends)
-    (setq company-fuzzy--backends nil)))
+    (setq company-fuzzy--backends nil)
+    (setq-local company-transformers (delq 'company-fuzzy--sort-candidates company-transformers))))
 
 
 ;;;###autoload
