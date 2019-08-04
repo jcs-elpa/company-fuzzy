@@ -66,10 +66,12 @@ Currently supports these values,
 
 #### Prefix ontop
 
+If you wish the prefix matchs ontop of all other selection, customize
+this variable to `t` like the line below.
+
 ```el
 (setq company-fuzzy-prefix-ontop t)
 ```
-
 
 
 ## Contribution
