@@ -64,7 +64,7 @@ Currently supports these values,
 * *none* - Gives you the raw result.
 * *alphabetic* - Sort in the alphabetic.
 
-#### Prefix ontop
+### Prefix ontop
 
 If you wish the prefix matchs ontop of all other selection, customize
 this variable to `t` like the line below.
