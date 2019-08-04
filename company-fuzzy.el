@@ -49,6 +49,11 @@
                  (const :tag "flx" flx))
   :group 'company-fuzzy)
 
+(defcustom company-fuzzy-prefix-ontop t
+  "Have the matching prefix ontop."
+  :type 'boolean
+  :group 'company-fuzzy)
+
 
 (defvar-local company-fuzzy--backends nil
   "Record down the company local backend in current buffer.")
@@ -95,14 +100,15 @@
   (cl-case company-fuzzy-sorting-backend
     ('none candidates)
     ('alphabetic
-     (setq candidates (sort candidates #'string-lessp))
-     (let ((prefix-matches '()))
-       (dolist (cand candidates)
-         (when (string-match-p company-fuzzy--matching-reg cand)
-           (push cand prefix-matches)
-           (setq candidates (remove cand candidates))))
-       (setq candidates (append (reverse prefix-matches) candidates)))
-     candidates)))
+     (setq candidates (sort candidates #'string-lessp))))
+  (when company-fuzzy-prefix-ontop
+    (let ((prefix-matches '()))
+      (dolist (cand candidates)
+        (when (string-match-p company-fuzzy--matching-reg cand)
+          (push cand prefix-matches)
+          (setq candidates (remove cand candidates))))
+      (setq candidates (append (reverse prefix-matches) candidates))))
+  candidates)
 
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
