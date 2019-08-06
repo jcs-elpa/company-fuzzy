@@ -6,7 +6,7 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Fuzzy matching for `company-mode'.
 ;; Keyword: auto auto-complete complete fuzzy matching
-;; Version: 0.2.0
+;; Version: 0.3.0
 ;; Package-Requires: ((emacs "24.3") (company "0.8.12") (flx "0.5"))
 ;; URL: https://github.com/jcs090218/company-fuzzy
 
@@ -52,6 +52,11 @@
 (defcustom company-fuzzy-prefix-ontop t
   "Have the matching prefix ontop."
   :type 'boolean
+  :group 'company-fuzzy)
+
+(defcustom company-fuzzy-sorting-function nil
+  "Function that gives the candidates and you do your own sorting."
+  :type 'function
   :group 'company-fuzzy)
 
 
@@ -131,6 +136,8 @@
            (setq candidates (append candidates cands)))))))
   (when company-fuzzy-prefix-ontop
     (setq candidates (company-fuzzy--sort-prefix-ontop candidates)))
+  (when (functionp company-fuzzy-sorting-function)
+    (setq candidates (funcall company-fuzzy-sorting-function candidates)))
   candidates)
 
 (defun company-fuzzy-all-candidates ()
