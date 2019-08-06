@@ -61,11 +61,9 @@ own backend by customize `company-fuzzy-sorting-backend` variable like this.
 
 Currently supports these values, 
 
-| Value Type | Description |
-|:---|:---|
-| *none* | Gives you the raw result. |
-| *alphabetic* | Sort in the alphabetic order. (VSCode) |
-| *flx* |Sort by [flx](https://github.com/lewang/flx) matching engine. (Sublime Text) |
+* *none* - Gives you the raw result.
+* *alphabetic* - Sort in the alphabetic order. (VSCode)
+* *flx* - Sort by [flx](https://github.com/lewang/flx) matching engine. (Sublime Text)
 
 ### Prefix ontop
 
