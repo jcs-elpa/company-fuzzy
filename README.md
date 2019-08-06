@@ -52,18 +52,28 @@ this mode could combine all sources and do the fuzzy work).
 
 ### Sorting/Scoring backend
 
-There are multiple sorting algorithms for auto-completion. You can choose your 
+There are multiple sorting algorithms for auto-completion. You can choose your
 own backend by customize `company-fuzzy-sorting-backend` variable like this.
 
 ```el
 (setq company-fuzzy-sorting-backend 'alphabetic)
 ```
 
-Currently supports these values, 
+Currently supports these values,
 
 * *none* - Gives you the raw result.
 * *alphabetic* - Sort in the alphabetic order. (VSCode)
 * *flx* - Sort by [flx](https://github.com/lewang/flx) matching engine. (Sublime Text)
+
+Or implements your sorting algorithm yourself? Assgin the function to
+`company-fuzzy-sorting-function` variable like this.
+
+```el
+(setq company-fuzzy-sorting-function 
+      (lambda (candidates)
+        (message "%s" candidates)
+        candidates))  ; Don't forget to return the candidaites!
+```
 
 ### Prefix ontop
 
