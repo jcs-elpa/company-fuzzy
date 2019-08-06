@@ -89,6 +89,25 @@ you probably don't need this to be on because the `flx` scoring engine
 already take care of that!*
 
 
+## Customization
+
+If you prefer `VSCode` like experience...
+```el
+(use-package company-fuzzy
+  :init
+  (setq company-fuzzy-sorting-backend 'alphabetic)
+  (setq company-fuzzy-prefix-ontop t))
+```
+
+If you prefer `Sublime Text` like experience...
+```el
+(use-package company-fuzzy
+  :init
+  (setq company-fuzzy-sorting-backend flx)
+  (setq company-fuzzy-prefix-ontop nil))
+  ```
+
+
 ## Contribution
 
 If you would like to contribute to this project, you may either
