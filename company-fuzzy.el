@@ -6,8 +6,8 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Fuzzy matching for `company-mode'.
 ;; Keyword: auto auto-complete complete fuzzy matching
-;; Version: 0.1.4
-;; Package-Requires: ((emacs "24.3") (company "0.9.10"))
+;; Version: 0.2.0
+;; Package-Requires: ((emacs "24.3") (company "0.8.12") (flx "0.5"))
 ;; URL: https://github.com/jcs090218/company-fuzzy
 
 ;; This file is NOT part of GNU Emacs.
@@ -95,19 +95,42 @@
           (setq index (1+ index))))
       result-candidates)))
 
+(defun company-fuzzy--sort-prefix-ontop (candidates)
+  "Sort CANDIDATES that match prefix ontop of all other selection."
+  (let ((prefix-matches '()))
+    (dolist (cand candidates)
+      (when (string-match-p company-fuzzy--matching-reg cand)
+        (push cand prefix-matches)
+        (setq candidates (remove cand candidates))))
+    (setq candidates (append (reverse prefix-matches) candidates)))
+  candidates)
+
 (defun company-fuzzy--sort-candidates (candidates)
   "Sort all CANDIDATES base on type of sorting backend."
   (cl-case company-fuzzy-sorting-backend
     ('none candidates)
-    ('alphabetic
-     (setq candidates (sort candidates #'string-lessp))))
+    ('alphabetic (setq candidates (sort candidates #'string-lessp)))
+    ('flx
+     (require 'flx)
+     (let ((scoring-table (make-hash-table))
+           (scoring-keys '()))
+       (dolist (cand candidates)
+         (let* ((scoring (flx-score cand company-fuzzy--matching-reg))
+                ;; Ensure score is not `nil'.
+                (score (if scoring (nth 0 scoring) 0)))
+           ;; For first time access score with hash-table.
+           (unless (gethash score scoring-table) (setf (gethash score scoring-table) '()))
+           ;; Push the candidate with the target score to hash-table.
+           (push cand (gethash score scoring-table))))
+       ;; Get all the keys into a list.
+       (maphash (lambda (score-key _cand-lst) (push score-key scoring-keys)) scoring-table)
+       (setq scoring-keys (sort scoring-keys #'>))  ; Sort keys in order.
+       (setq candidates '())  ; Clean up, and ready for final output.
+       (dolist (key scoring-keys)
+         (let ((cands (sort (gethash key scoring-table) #'string-lessp)))
+           (setq candidates (append candidates cands)))))))
   (when company-fuzzy-prefix-ontop
-    (let ((prefix-matches '()))
-      (dolist (cand candidates)
-        (when (string-match-p company-fuzzy--matching-reg cand)
-          (push cand prefix-matches)
-          (setq candidates (remove cand candidates))))
-      (setq candidates (append (reverse prefix-matches) candidates))))
+    (setq candidates (company-fuzzy--sort-prefix-ontop candidates)))
   candidates)
 
 (defun company-fuzzy-all-candidates ()
