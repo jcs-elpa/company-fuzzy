@@ -83,7 +83,7 @@ this variable to `t` like the line below.
 (setq company-fuzzy-prefix-ontop t)
 ```
 
-**Notice: If you set `company-fuzzy-sorting-backend` to `'flx` then 
+**[Notice] If you set `company-fuzzy-sorting-backend` to `'flx` then 
 you probably don't need this to be on because the `flx` scoring engine 
 already take care of that!**
 
