@@ -3,7 +3,7 @@
 
 
 # company-fuzzy
-> Fuzzy matching for `company-mode'
+> Fuzzy matching for `company-mode'.
 
 | company-mode | With company-fuzzy |
 |:---|:---|
