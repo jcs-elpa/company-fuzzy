@@ -69,10 +69,9 @@ Or implements your sorting algorithm yourself? Assgin the function to
 `company-fuzzy-sorting-function` variable like this.
 
 ```el
-(setq company-fuzzy-sorting-function 
-      (lambda (candidates)
-        (message "%s" candidates)
-        candidates))  ; Don't forget to return the candidaites!
+(setq company-fuzzy-sorting-function (lambda (candidates)
+                                       (message "%s" candidates)
+                                       candidates))  ; Don't forget to return the candidaites!
 ```
 
 ### Prefix ontop
