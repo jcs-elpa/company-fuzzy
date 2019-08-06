@@ -91,7 +91,7 @@ already take care of that!*
 
 ## Customization
 
-If you prefer `VSCode` like experience...
+If you prefer [VSCode](https://code.visualstudio.com/) like experience...
 ```el
 (use-package company-fuzzy
   :init
@@ -99,7 +99,7 @@ If you prefer `VSCode` like experience...
   (setq company-fuzzy-prefix-ontop t))
 ```
 
-If you prefer `Sublime Text` like experience...
+If you prefer [Sublime Text](https://www.sublimetext.com/) like experience...
 ```el
 (use-package company-fuzzy
   :init
