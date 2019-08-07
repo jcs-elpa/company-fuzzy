@@ -198,5 +198,8 @@
   :require 'company-fuzzy)
 
 
+(declare-function flx-score "ext:flx.el")
+
+
 (provide 'company-fuzzy)
 ;;; company-fuzzy.el ends here
