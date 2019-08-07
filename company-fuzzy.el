@@ -33,6 +33,7 @@
 ;;; Code:
 
 (require 'company)
+(require 's)
 
 
 (defgroup company-fuzzy nil
