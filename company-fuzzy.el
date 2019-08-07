@@ -101,7 +101,7 @@
     (if (or (string= candidate "")
             (not backend))
         nil
-      (funcall backend 'doc-buffer candidate))))
+      (ignore-errors (funcall backend 'doc-buffer candidate)))))
 
 ;;-----------------------------------------------------------------------
 ;; Annotation
@@ -149,7 +149,7 @@
   "Return the source annotation string by CANDIDATE and BACKEND."
   (if (and candidate
            backend)
-      (funcall backend 'annotation candidate)
+      (ignore-errors (funcall backend 'annotation candidate))
     ""))
 
 (defun company-fuzzy--extract-annotation (candidate)
