@@ -83,10 +83,20 @@ this variable to `t` like the line below.
 (setq company-fuzzy-prefix-ontop t)
 ```
 
-*P.S. 
-If you set `company-fuzzy-sorting-backend` to `'flx` then 
-you probably don't need this to be on because the `flx` scoring engine 
+*P.S.
+If you set `company-fuzzy-sorting-backend` to `'flx` then
+you probably don't need this to be on because the `flx` scoring engine
 already take care of that!*
+
+
+### For annotation
+
+You can toggle `company-fuzzy-show-annotation` for showing annotation or not.
+
+You can also customize annotation `prefix` and `postfix`.
+
+* `company-fuzzy-anno-prefix` => `<`
+* `company-fuzzy-anno-postfix` => `>`
 
 
 ## Contribution
