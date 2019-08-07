@@ -94,7 +94,7 @@
 
 (defun company-fuzzy--is-contain-list-string (in-list in-str)
   "Check if a string IN-STR contain in any string in the string list IN-LIST."
-  (cl-some #'(lambda (lb-sub-str) (string-match-p (regexp-quote lb-sub-str) in-str)) in-list))
+  (cl-some #'(lambda (lb-sub-str) (string= lb-sub-str in-str)) in-list))
 
 (defun company-fuzzy--is-contain-list-symbol (in-list in-symbol)
   "Check if a symbol IN-SYMBOL contain in any symbol in the symbol list IN-LIST."
@@ -125,13 +125,9 @@
       (let ((candidates (nth index company-fuzzy--valid-candidates))
             (backend (nth index company-fuzzy--valid-backends))
             (cand-index 0))
-        (while (and (not break-it)
-                    (< cand-index (length candidates)))
-          (let ((cand (nth cand-index candidates)))
-            (when (string= cand candidate)
-              (setq result-backend backend)
-              (setq break-it t)))
-          (setq cand-index (1+ cand-index))))
+        (when (company-fuzzy--is-contain-list-string candidates candidate)
+          (setq result-backend backend)
+          (setq break-it t)))
       (setq index (1+ index)))
     result-backend))
 
