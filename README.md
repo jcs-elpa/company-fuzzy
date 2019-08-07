@@ -5,9 +5,9 @@
 # company-fuzzy
 > Fuzzy matching for `company-mode'.
 
-| company-mode | With company-fuzzy |
-|:---|:---|
-|<img src="./screenshot/normal.gif"/>|<img src="./screenshot/with-fuzzy.gif"/>|
+<p align="center">
+  <img src="./screenshot/demo.gif"/>
+</p>
 
 
 Pure `elisp` fuzzy completion for `company-mode`. This plugin search through
