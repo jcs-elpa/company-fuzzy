@@ -122,10 +122,12 @@
   "Sort CANDIDATES that match prefix ontop of all other selection."
   (let ((prefix-matches '()))
     (dolist (cand candidates)
-      (when (string-match-p company-fuzzy--matching-reg cand)
+      (when (string-match-p (concat company-fuzzy--matching-reg) cand)
         (push cand prefix-matches)
         (setq candidates (remove cand candidates))))
-    (setq candidates (append (reverse prefix-matches) candidates)))
+    (setq prefix-matches (reverse prefix-matches))
+    (setq prefix-matches (sort prefix-matches (lambda (str1 str2) (< (length str1) (length str2)))))
+    (setq candidates (append prefix-matches candidates)))
   candidates)
 
 (defun company-fuzzy--sort-candidates (candidates)
