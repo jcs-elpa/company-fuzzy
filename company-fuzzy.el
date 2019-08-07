@@ -6,7 +6,7 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Fuzzy matching for `company-mode'.
 ;; Keyword: auto auto-complete complete fuzzy matching
-;; Version: 0.4.5
+;; Version: 0.4.6
 ;; Package-Requires: ((emacs "24.3") (company "0.8.12") (s "1.12.0"))
 ;; URL: https://github.com/jcs090218/company-fuzzy
 
@@ -65,7 +65,7 @@
   :type 'boolean
   :group 'company-fuzzy)
 
-(defcustom company-fuzzy-anno-prefix "<"
+(defcustom company-fuzzy-anno-prefix " <"
   "Annotation string add before the source."
   :type 'string
   :group 'company-fuzzy)
