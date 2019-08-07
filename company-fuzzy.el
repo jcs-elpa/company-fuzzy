@@ -6,7 +6,7 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Fuzzy matching for `company-mode'.
 ;; Keyword: auto auto-complete complete fuzzy matching
-;; Version: 0.4.0
+;; Version: 0.4.1
 ;; Package-Requires: ((emacs "24.3") (company "0.8.12") (s "1.12.0"))
 ;; URL: https://github.com/jcs090218/company-fuzzy
 
