@@ -93,6 +93,10 @@ already take care of that!*
 
 You can toggle `company-fuzzy-show-annotation` for showing annotation or not.
 
+```el
+(setq company-fuzzy-show-annotation t)
+```
+
 You can also customize annotation `prefix` and `postfix`.
 
 * `company-fuzzy-anno-prefix` => `<`
