@@ -6,7 +6,7 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Fuzzy matching for `company-mode'.
 ;; Keyword: auto auto-complete complete fuzzy matching
-;; Version: 0.4.1
+;; Version: 0.4.5
 ;; Package-Requires: ((emacs "24.3") (company "0.8.12") (s "1.12.0"))
 ;; URL: https://github.com/jcs090218/company-fuzzy
 
@@ -92,6 +92,20 @@
   "Record down the company current search reg/characters.")
 
 
+;;-----------------------------------------------------------------------
+;; Documentation
+
+(defun company-fuzzy--doc-as-buffer (candidate)
+  "Provide doc by CANDIDATE."
+  (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
+    (if (or (string= candidate "")
+            (not backend))
+        nil
+      (funcall backend 'doc-buffer candidate))))
+
+;;-----------------------------------------------------------------------
+;; Annotation
+
 (defun company-fuzzy--is-contain-list-string (in-list in-str)
   "Check if a string IN-STR contain in any string in the string list IN-LIST."
   (cl-some #'(lambda (lb-sub-str) (string= lb-sub-str in-str)) in-list))
@@ -106,14 +120,6 @@
       (let ((backend-str (symbol-name backend)))
         (s-replace "company-" "" backend-str))
     ""))
-
-(defun company-fuzzy--extract-annotation (candidate)
-  "Extract annotation from CANDIDATE."
-  (when candidate
-    (let* ((backend (company-fuzzy--get-backend-by-candidate candidate))
-           (backend-str (company-fuzzy--get-backend-string backend)))
-      (when (string= backend-str "") (setq backend-str "unknown"))
-      (concat company-fuzzy-anno-prefix backend-str company-fuzzy-anno-postfix))))
 
 (defun company-fuzzy--get-backend-by-candidate (candidate)
   "Return the backend symbol by using CANDIDATE as search index."
@@ -130,6 +136,31 @@
       (setq index (1+ index)))
     result-backend))
 
+(defun company-fuzzy--backend-string (candidate backend)
+  "Form the BACKEND string by CANDIDATE."
+  (if (and candidate
+           company-fuzzy-show-annotation)
+      (let ((backend-str (company-fuzzy--get-backend-string backend)))
+        (when (string= backend-str "") (setq backend-str "unknown"))
+        (concat company-fuzzy-anno-prefix backend-str company-fuzzy-anno-postfix))
+    ""))
+
+(defun company-fuzzy--source-anno-string (candidate backend)
+  "Return the source annotation string by CANDIDATE and BACKEND."
+  (if (and candidate
+           backend)
+      (funcall backend 'annotation candidate)
+    ""))
+
+(defun company-fuzzy--extract-annotation (candidate)
+  "Extract annotation from CANDIDATE."
+  (let* ((backend (company-fuzzy--get-backend-by-candidate candidate))
+         (backend-str (company-fuzzy--backend-string candidate backend))
+         (orig-anno (company-fuzzy--source-anno-string candidate backend)))
+    (concat orig-anno backend-str)))
+
+;;-----------------------------------------------------------------------
+;; Fuzzy Matching
 
 (defun company-fuzzy--match-char (backend c)
   "Fuzzy match the candidates with character C and current BACKEND."
@@ -185,6 +216,9 @@
           (setq index (1+ index))))
       result-candidates)))
 
+;;-----------------------------------------------------------------------
+;; Sorting / Scoring
+
 (defun company-fuzzy--sort-prefix-ontop (candidates)
   "Sort CANDIDATES that match prefix ontop of all other selection."
   (let ((prefix-matches '()))
@@ -226,6 +260,9 @@
     (setq candidates (funcall company-fuzzy-sorting-function candidates)))
   candidates)
 
+;;-----------------------------------------------------------------------
+;; Core
+
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
   (setq company-fuzzy--valid-backends '())
@@ -242,7 +279,6 @@
           (push temp-candidates company-fuzzy--valid-candidates))))
     all-candidates))
 
-
 (defun company-fuzzy-all-other-backends (command &optional arg &rest ignored)
   "Backend source for all other backend except this backend, COMMAND, ARG, IGNORED."
   (interactive (list 'interactive))
@@ -251,11 +287,12 @@
     (prefix (and (not (company-in-string-or-comment))
                  (company-grab-symbol)))
     (annotation
-     (when company-fuzzy-show-annotation
-       (company-fuzzy--extract-annotation arg)))
+     (company-fuzzy--extract-annotation arg))
     (candidates
      (setq company-fuzzy--matching-reg arg)
-     (company-fuzzy-all-candidates))))
+     (company-fuzzy-all-candidates))
+    (doc-buffer
+     (company-fuzzy--doc-as-buffer arg))))
 
 
 (defun company-fuzzy--enable ()
