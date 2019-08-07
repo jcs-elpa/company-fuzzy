@@ -6,7 +6,7 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Fuzzy matching for `company-mode'.
 ;; Keyword: auto auto-complete complete fuzzy matching
-;; Version: 0.3.2
+;; Version: 0.3.3
 ;; Package-Requires: ((emacs "24.3") (company "0.8.12"))
 ;; URL: https://github.com/jcs090218/company-fuzzy
 
@@ -75,13 +75,24 @@
         valid-candidates
       nil)))
 
-(defun company-fuzzy--match-char-exists-candidates (candidates c)
-  "Fuzzy match the existing CANDIDATES with character C."
-  (let ((also-match-candidates '()))
-    (dolist (cand candidates)
-      (when (string-match-p c cand)
-        (push cand also-match-candidates)))
-    also-match-candidates))
+(defun company-fuzzy--match-char-exists-candidates (match-results c)
+  "Fuzzy match the existing MATCH-RESULTS with character C."
+  (let ((also-match-candidates '())
+        (also-match-positions '())
+        (candidates (car match-results))
+        (match-positions (cdr match-results))
+        (index 0))
+    (while (< index (length candidates))
+      (let* ((cand (nth index candidates))
+             (cur-pos (nth index match-positions))
+             (pos (if cur-pos (1+ cur-pos) 1))
+             (new-pos (string-match-p c cand pos)))
+        (when (and (numberp new-pos)
+                   (<= pos new-pos))
+          (push cand also-match-candidates)
+          (push new-pos also-match-positions)))
+      (setq index (1+ index)))
+    (cons also-match-candidates also-match-positions)))
 
 (defun company-fuzzy--match-string (backend str)
   "Fuzzy match the candidates with string STR and current BACKEND."
@@ -90,13 +101,20 @@
            (first-char (nth 0 splitted-c))
            (result-candidates (company-fuzzy--match-char backend first-char))
            (break-it (not result-candidates))
+           ;; Record all match position for all candidates, for ordering issue.
+           (match-positions '())
            (index 1))
       (while (and (not break-it)
                   (< index (length splitted-c)))
-        (let ((c (nth index splitted-c)))
-          (setq result-candidates (company-fuzzy--match-char-exists-candidates result-candidates c))
-          (when (= (length result-candidates) 0)
-            (setq break-it t))
+        (let* ((c (nth index splitted-c))
+               (match-results
+                (company-fuzzy--match-char-exists-candidates (cons result-candidates
+                                                                   match-positions)
+                                                             c)))
+          (setq result-candidates (car match-results))
+          (setq match-positions (cdr match-results)))
+        (if (= (length result-candidates) 0)
+            (setq break-it t)
           (setq index (1+ index))))
       result-candidates)))
 
