@@ -7,7 +7,7 @@
 ;; Description: Fuzzy matching for `company-mode'.
 ;; Keyword: auto auto-complete complete fuzzy matching
 ;; Version: 0.3.4
-;; Package-Requires: ((emacs "24.3") (company "0.8.12"))
+;; Package-Requires: ((emacs "24.3") (company "0.8.12") (s "1.12.0"))
 ;; URL: https://github.com/jcs090218/company-fuzzy
 
 ;; This file is NOT part of GNU Emacs.
@@ -59,17 +59,88 @@
   :type 'function
   :group 'company-fuzzy)
 
+(defcustom company-fuzzy-show-annotation t
+  "Show annotation from source."
+  :type 'boolean
+  :group 'company-fuzzy)
+
+(defcustom company-fuzzy-anno-prefix "<"
+  "Annotation string add before the source."
+  :type 'string
+  :group 'company-fuzzy)
+
+(defcustom company-fuzzy-anno-postfix ">"
+  "Annotation string add after the source."
+  :type 'string
+  :group 'company-fuzzy)
+
+
+(defvar company-fuzzy--no-prefix-backends '(company-yasnippet)
+  "List of backends that doesn't accept prefix argument.")
 
 (defvar-local company-fuzzy--backends nil
   "Record down the company local backend in current buffer.")
+
+(defvar-local company-fuzzy--valid-backends nil
+  "Pair data with `company-fuzzy--valid-candidates', for cache searching.")
+
+(defvar-local company-fuzzy--valid-candidates nil
+  "Pair data with `company-fuzzy--valid-backends', for cache searching.")
 
 (defvar-local company-fuzzy--matching-reg ""
   "Record down the company current search reg/characters.")
 
 
+(defun company-fuzzy--is-contain-list-string (in-list in-str)
+  "Check if a string IN-STR contain in any string in the string list IN-LIST."
+  (cl-some #'(lambda (lb-sub-str) (string-match-p (regexp-quote lb-sub-str) in-str)) in-list))
+
+(defun company-fuzzy--is-contain-list-symbol (in-list in-symbol)
+  "Check if a symbol IN-SYMBOL contain in any symbol in the symbol list IN-LIST."
+  (cl-some #'(lambda (lb-sub-symbol) (equal lb-sub-symbol in-symbol)) in-list))
+
+(defun company-fuzzy--get-backend-string (backend)
+  "Get BACKEND's as a string."
+  (if backend
+      (let ((backend-str (symbol-name backend)))
+        (s-replace "company-" "" backend-str))
+    ""))
+
+(defun company-fuzzy--extract-annotation (candidate)
+  "Extract annotation from CANDIDATE."
+  (when candidate
+    (let* ((backend (company-fuzzy--get-backend-by-candidate candidate))
+           (backend-str (company-fuzzy--get-backend-string backend)))
+      (when (string= backend-str "") (setq backend-str "unknown"))
+      (concat company-fuzzy-anno-prefix backend-str company-fuzzy-anno-postfix))))
+
+(defun company-fuzzy--get-backend-by-candidate (candidate)
+  "Return the backend symbol by using CANDIDATE as search index."
+  (let ((result-backend nil)
+        (break-it nil)
+        (index 0))
+    (while (and (not break-it)
+                (< index (length company-fuzzy--valid-backends)))
+      (let ((candidates (nth index company-fuzzy--valid-candidates))
+            (backend (nth index company-fuzzy--valid-backends))
+            (cand-index 0))
+        (while (and (not break-it)
+                    (< cand-index (length candidates)))
+          (let ((cand (nth cand-index candidates)))
+            (when (string= cand candidate)
+              (setq result-backend backend)
+              (setq break-it t)))
+          (setq cand-index (1+ cand-index))))
+      (setq index (1+ index)))
+    result-backend))
+
+
 (defun company-fuzzy--match-char (backend c)
   "Fuzzy match the candidates with character C and current BACKEND."
-  (let ((valid-candidates (ignore-errors (funcall backend 'candidates c))))
+  (let* ((no-prefix-backend (company-fuzzy--is-contain-list-symbol company-fuzzy--no-prefix-backends backend))
+         (valid-candidates
+          (ignore-errors
+            (funcall backend 'candidates (if no-prefix-backend "" c)))))
     (if (and (listp valid-candidates)
              (stringp (nth 0 valid-candidates)))
         valid-candidates
@@ -125,8 +196,7 @@
       (when (string-match-p company-fuzzy--matching-reg cand)
         (push cand prefix-matches)
         (setq candidates (remove cand candidates))))
-    (setq prefix-matches (reverse prefix-matches))
-    (setq prefix-matches (sort prefix-matches (lambda (str1 str2) (< (length str1) (length str2)))))
+    (setq prefix-matches (sort prefix-matches #'string-lessp))
     (setq candidates (append prefix-matches candidates)))
   candidates)
 
@@ -162,13 +232,18 @@
 
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
+  (setq company-fuzzy--valid-backends '())
+  (setq company-fuzzy--valid-candidates '())
   (let ((all-candidates '()))
     (dolist (backend company-fuzzy--backends)
       (let ((temp-candidates nil))
         (setq temp-candidates (company-fuzzy--match-string backend company-fuzzy--matching-reg))
         (when temp-candidates
           (setq all-candidates (append all-candidates temp-candidates))
-          (delete-dups all-candidates))))
+          (delete-dups all-candidates)
+          ;; Record all candidates by backend as id.
+          (push backend company-fuzzy--valid-backends)
+          (push temp-candidates company-fuzzy--valid-candidates))))
     all-candidates))
 
 
@@ -179,6 +254,9 @@
     (interactive (company-begin-backend 'company-fuzzy-all-other-backends))
     (prefix (and (not (company-in-string-or-comment))
                  (company-grab-symbol)))
+    (annotation
+     (when company-fuzzy-show-annotation
+       (company-fuzzy--extract-annotation arg)))
     (candidates
      (setq company-fuzzy--matching-reg arg)
      (company-fuzzy-all-candidates))))
