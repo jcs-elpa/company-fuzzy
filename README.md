@@ -37,11 +37,11 @@ hence all possible candidates will be shown in the auto-complete menu.
 
 You can enable it globally by adding this line to your config
 ```el
-(global-company-fuzzy-mode t)
+(global-company-fuzzy-mode 1)
 ```
 Or you can just enable it in any specific buffer/mode you want.
 ```el
-(company-fuzzy-mode t)
+(company-fuzzy-mode 1)
 ```
 
 Make sure you call either of these functions after all
