@@ -99,7 +99,7 @@ You can toggle `company-fuzzy-show-annotation` for showing annotation or not.
 
 You can also customize annotation `prefix` and `postfix`.
 
-* `company-fuzzy-anno-prefix` => `<`
+* `company-fuzzy-anno-prefix` => ` <`
 * `company-fuzzy-anno-postfix` => `>`
 
 
