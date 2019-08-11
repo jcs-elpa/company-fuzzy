@@ -163,6 +163,28 @@
     (concat orig-anno backend-str)))
 
 ;;-----------------------------------------------------------------------
+;; Highlighting
+
+(defun company-fuzzy--company-fill-propertize (fnc &rest args)
+  "Highlight the matching characters with original function FNC, and rest ARGS."
+  (if company-fuzzy-mode
+      (let* ((line (apply fnc args))
+             (cur-selection (nth company-selection company-candidates))
+             (selected (string-match-p cur-selection line))
+             (selected-face (if selected
+                                'company-tooltip-common-selection
+                              'company-tooltip-common))
+             (splitted-c (remove "" (split-string company-fuzzy--matching-reg ""))))
+        (dolist (c splitted-c)
+          (let ((pos (string-match-p c line)))
+            (while (and (numberp pos)
+                        (< pos (+ (length cur-selection) company-tooltip-margin)))
+              (font-lock-prepend-text-property pos (1+ pos) 'face selected-face line)
+              (setq pos (string-match-p c line (1+ pos))))))
+        line)
+    (apply fnc args)))
+
+;;-----------------------------------------------------------------------
 ;; Fuzzy Matching
 
 (defun company-fuzzy--match-char (backend c)
@@ -218,28 +240,6 @@
             (setq break-it t)
           (setq index (1+ index))))
       result-candidates)))
-
-;;-----------------------------------------------------------------------
-;; Highlighting
-
-(defun company-fuzzy--company-fill-propertize (fnc &rest args)
-  "Highlight the matching characters with original function FNC, and rest ARGS."
-  (if company-fuzzy-mode
-      (let* ((line (apply fnc args))
-             (cur-selection (nth company-selection company-candidates))
-             (selected (string-match-p cur-selection line))
-             (selected-face (if selected
-                                'company-tooltip-common-selection
-                              'company-tooltip-common))
-             (splitted-c (remove "" (split-string company-fuzzy--matching-reg ""))))
-        (dolist (c splitted-c)
-          (let ((pos (string-match-p c line)))
-            (while (and (numberp pos)
-                        (< pos (+ (length cur-selection) company-tooltip-margin)))
-              (font-lock-prepend-text-property pos (1+ pos) 'face selected-face line)
-              (setq pos (string-match-p c line (1+ pos))))))
-        line)
-    (apply fnc args)))
 
 ;;-----------------------------------------------------------------------
 ;; Sorting / Scoring
