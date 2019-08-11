@@ -6,8 +6,8 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Fuzzy matching for `company-mode'.
 ;; Keyword: auto auto-complete complete fuzzy matching
-;; Version: 0.4.7
-;; Package-Requires: ((emacs "24.3") (company "0.8.12") (s "1.12.0"))
+;; Version: 0.5.0
+;; Package-Requires: ((emacs "24.4") (company "0.8.12") (s "1.12.0"))
 ;; URL: https://github.com/jcs090218/company-fuzzy
 
 ;; This file is NOT part of GNU Emacs.
@@ -93,18 +93,7 @@
 
 
 ;;-----------------------------------------------------------------------
-;; Documentation
-
-(defun company-fuzzy--doc-as-buffer (candidate)
-  "Provide doc by CANDIDATE."
-  (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
-    (if (or (string= candidate "")
-            (not backend))
-        nil
-      (ignore-errors (funcall backend 'doc-buffer candidate)))))
-
-;;-----------------------------------------------------------------------
-;; Annotation
+;; Utilies
 
 (defun company-fuzzy--is-contain-list-string (in-list in-str)
   "Check if a string IN-STR contain in any string in the string list IN-LIST."
@@ -113,13 +102,6 @@
 (defun company-fuzzy--is-contain-list-symbol (in-list in-symbol)
   "Check if a symbol IN-SYMBOL contain in any symbol in the symbol list IN-LIST."
   (cl-some #'(lambda (lb-sub-symbol) (equal lb-sub-symbol in-symbol)) in-list))
-
-(defun company-fuzzy--get-backend-string (backend)
-  "Get BACKEND's as a string."
-  (if backend
-      (let ((backend-str (symbol-name backend)))
-        (s-replace "company-" "" backend-str))
-    ""))
 
 (defun company-fuzzy--get-backend-by-candidate (candidate)
   "Return the backend symbol by using CANDIDATE as search index."
@@ -135,6 +117,27 @@
           (setq break-it t)))
       (setq index (1+ index)))
     result-backend))
+
+;;-----------------------------------------------------------------------
+;; Documentation
+
+(defun company-fuzzy--doc-as-buffer (candidate)
+  "Provide doc by CANDIDATE."
+  (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
+    (if (or (string= candidate "")
+            (not backend))
+        nil
+      (ignore-errors (funcall backend 'doc-buffer candidate)))))
+
+;;-----------------------------------------------------------------------
+;; Annotation
+
+(defun company-fuzzy--get-backend-string (backend)
+  "Get BACKEND's as a string."
+  (if backend
+      (let ((backend-str (symbol-name backend)))
+        (s-replace "company-" "" backend-str))
+    ""))
 
 (defun company-fuzzy--backend-string (candidate backend)
   "Form the BACKEND string by CANDIDATE."
@@ -164,10 +167,10 @@
 
 (defun company-fuzzy--match-char (backend c)
   "Fuzzy match the candidates with character C and current BACKEND."
-  (let* ((no-prefix-backend (company-fuzzy--is-contain-list-symbol company-fuzzy--no-prefix-backends backend))
+  (let* ((no-prefix-backends (company-fuzzy--is-contain-list-symbol company-fuzzy--no-prefix-backends backend))
          (valid-candidates
           (ignore-errors
-            (funcall backend 'candidates (if no-prefix-backend "" c)))))
+            (funcall backend 'candidates (if no-prefix-backends "" c)))))
     (if (and (listp valid-candidates)
              (stringp (nth 0 valid-candidates)))
         valid-candidates
@@ -215,6 +218,28 @@
             (setq break-it t)
           (setq index (1+ index))))
       result-candidates)))
+
+;;-----------------------------------------------------------------------
+;; Highlighting
+
+(defun company-fuzzy--company-fill-propertize (fnc &rest args)
+  "Highlight the matching characters with original function FNC, and rest ARGS."
+  (if company-fuzzy-mode
+      (let* ((line (apply fnc args))
+             (cur-selection (nth company-selection company-candidates))
+             (selected (string-match-p cur-selection line))
+             (selected-face (if selected
+                                'company-tooltip-common-selection
+                              'company-tooltip-common))
+             (splitted-c (remove "" (split-string company-fuzzy--matching-reg ""))))
+        (dolist (c splitted-c)
+          (let ((pos (string-match-p c line)))
+            (while (and (numberp pos)
+                        (< pos (+ (length cur-selection) company-tooltip-margin)))
+              (font-lock-prepend-text-property pos (1+ pos) 'face selected-face line)
+              (setq pos (string-match-p c line (1+ pos))))))
+        line)
+    (apply fnc args)))
 
 ;;-----------------------------------------------------------------------
 ;; Sorting / Scoring
@@ -300,14 +325,16 @@
   (unless company-fuzzy--backends
     (setq company-fuzzy--backends company-backends)
     (setq-local company-backends '(company-fuzzy-all-other-backends))
-    (setq-local company-transformers (append company-transformers '(company-fuzzy--sort-candidates)))))
+    (setq-local company-transformers (append company-transformers '(company-fuzzy--sort-candidates)))
+    (advice-add 'company-fill-propertize :around #'company-fuzzy--company-fill-propertize)))
 
 (defun company-fuzzy--disable ()
   "Revert all other backend back to `company-backends'."
   (when company-fuzzy--backends
     (setq-local company-backends company-fuzzy--backends)
     (setq company-fuzzy--backends nil)
-    (setq-local company-transformers (delq 'company-fuzzy--sort-candidates company-transformers))))
+    (setq-local company-transformers (delq 'company-fuzzy--sort-candidates company-transformers))
+    (advice-remove 'company-fill-propertize #'company-fuzzy--company-fill-propertize)))
 
 
 ;;;###autoload
