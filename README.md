@@ -105,9 +105,10 @@ You can also customize annotation `prefix` and `postfix`.
 
 ## Details
 
-Since `company` granted most control to users, every company backend 
-developer has different method of implementing company backend. It is 
-hard to manage all backends to one by varies of rules.
+Since [company](https://github.com/company-mode/company-mode) 
+granted most control to users, every company backend developer 
+has different method of implementing company backend. It is hard 
+to manage all backends to one by varies of rules.
 
 If you encountered the backend that does not work with this package; try 
 add the backend to `company-fuzzy--no-prefix-backends`. Then this 
