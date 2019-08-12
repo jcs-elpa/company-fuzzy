@@ -103,6 +103,24 @@ You can also customize annotation `prefix` and `postfix`.
 * `company-fuzzy-anno-postfix` => `>`
 
 
+### Details
+
+Since `company` granted most control to users, every company backend 
+developer has different method of implementing company backend. It is 
+hard to manage all backends to one by varies of rules.
+
+If you encountered the backend that does not work with this package; try 
+add the backend to `company-fuzzy--no-prefix-backends`. Then this 
+package will try to find the list of candidates when without any prefix. 
+`company-yasnippet` is one example that doesn't accept any prefix, hence 
+if backend that doesn't gives candidates by any prefix or no prefix then 
+this package can't get the list of candidates to do the fuzzy work.
+
+```el
+(add-to-list company-fuzzy--no-prefix-backends 'company-yasnippet)
+```
+
+
 ## Contribution
 
 If you would like to contribute to this project, you may either
