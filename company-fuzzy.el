@@ -93,6 +93,44 @@
 
 
 ;;-----------------------------------------------------------------------
+;; Mode
+
+(defun company-fuzzy--enable ()
+  "Record down all other backend to `company-fuzzy--backends'."
+  (unless company-fuzzy--backends
+    (setq company-fuzzy--backends company-backends)
+    (setq-local company-backends '(company-fuzzy-all-other-backends))
+    (setq-local company-transformers (append company-transformers '(company-fuzzy--sort-candidates)))
+    (advice-add 'company-fill-propertize :around #'company-fuzzy--company-fill-propertize)))
+
+(defun company-fuzzy--disable ()
+  "Revert all other backend back to `company-backends'."
+  (when company-fuzzy--backends
+    (setq-local company-backends company-fuzzy--backends)
+    (setq company-fuzzy--backends nil)
+    (setq-local company-transformers (delq 'company-fuzzy--sort-candidates company-transformers))
+    (advice-remove 'company-fill-propertize #'company-fuzzy--company-fill-propertize)))
+
+
+;;;###autoload
+(define-minor-mode company-fuzzy-mode
+  "Minor mode 'company-fuzzy-mode'."
+  :lighter " ComFuz"
+  :group company-fuzzy
+  (if company-fuzzy-mode
+      (company-fuzzy--enable)
+    (company-fuzzy--disable)))
+
+(defun company-fuzzy-turn-on-company-fuzzy-mode ()
+  "Turn on the 'company-fuzzy-mode'."
+  (company-fuzzy-mode 1))
+
+;;;###autoload
+(define-globalized-minor-mode global-company-fuzzy-mode
+  company-fuzzy-mode company-fuzzy-turn-on-company-fuzzy-mode
+  :require 'company-fuzzy)
+
+;;-----------------------------------------------------------------------
 ;; Utilies
 
 (defun company-fuzzy--is-contain-list-string (in-list in-str)
@@ -326,42 +364,6 @@
     (annotation (company-fuzzy--extract-annotation arg))
     (candidates (company-fuzzy-all-candidates))
     (doc-buffer (company-fuzzy--doc-as-buffer arg))))
-
-
-(defun company-fuzzy--enable ()
-  "Record down all other backend to `company-fuzzy--backends'."
-  (unless company-fuzzy--backends
-    (setq company-fuzzy--backends company-backends)
-    (setq-local company-backends '(company-fuzzy-all-other-backends))
-    (setq-local company-transformers (append company-transformers '(company-fuzzy--sort-candidates)))
-    (advice-add 'company-fill-propertize :around #'company-fuzzy--company-fill-propertize)))
-
-(defun company-fuzzy--disable ()
-  "Revert all other backend back to `company-backends'."
-  (when company-fuzzy--backends
-    (setq-local company-backends company-fuzzy--backends)
-    (setq company-fuzzy--backends nil)
-    (setq-local company-transformers (delq 'company-fuzzy--sort-candidates company-transformers))
-    (advice-remove 'company-fill-propertize #'company-fuzzy--company-fill-propertize)))
-
-
-;;;###autoload
-(define-minor-mode company-fuzzy-mode
-  "Minor mode 'company-fuzzy-mode'."
-  :lighter " ComFuz"
-  :group company-fuzzy
-  (if company-fuzzy-mode
-      (company-fuzzy--enable)
-    (company-fuzzy--disable)))
-
-(defun company-fuzzy-turn-on-company-fuzzy-mode ()
-  "Turn on the 'company-fuzzy-mode'."
-  (company-fuzzy-mode 1))
-
-;;;###autoload
-(define-globalized-minor-mode global-company-fuzzy-mode
-  company-fuzzy-mode company-fuzzy-turn-on-company-fuzzy-mode
-  :require 'company-fuzzy)
 
 
 (declare-function flx-score "ext:flx.el")
