@@ -103,7 +103,7 @@ You can also customize annotation `prefix` and `postfix`.
 * `company-fuzzy-anno-postfix` => `>`
 
 
-### Details
+## Details
 
 Since `company` granted most control to users, every company backend 
 developer has different method of implementing company backend. It is 
