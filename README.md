@@ -117,7 +117,7 @@ if backend that doesn't gives candidates by any prefix or no prefix then
 this package can't get the list of candidates to do the fuzzy work.
 
 ```el
-(add-to-list company-fuzzy--no-prefix-backends 'company-yasnippet)
+(add-to-list 'company-fuzzy--no-prefix-backends 'company-yasnippet)
 ```
 
 
