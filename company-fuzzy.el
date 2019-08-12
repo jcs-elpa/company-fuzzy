@@ -6,7 +6,7 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; Description: Fuzzy matching for `company-mode'.
 ;; Keyword: auto auto-complete complete fuzzy matching
-;; Version: 0.5.2
+;; Version: 0.5.3
 ;; Package-Requires: ((emacs "24.4") (company "0.8.12") (s "1.12.0"))
 ;; URL: https://github.com/jcs090218/company-fuzzy
 
@@ -209,7 +209,8 @@
       (let* ((line (apply fnc args))
              (cur-selection (nth company-selection company-candidates))
              (splitted-section (remove "" (split-string line " ")))
-             (selected (string= cur-selection (nth 0 splitted-section)))
+             (process-selection (nth 0 splitted-section))
+             (selected (string= cur-selection process-selection))
              (selected-face (if selected
                                 'company-tooltip-common-selection
                               'company-tooltip-common))
@@ -217,7 +218,7 @@
                                        'company-tooltip-selection
                                      'company-tooltip))
              (splitted-c (remove "" (split-string company-fuzzy--matching-reg "")))
-             (right-pt (+ (length cur-selection) company-tooltip-margin)))
+             (right-pt (+ (length process-selection) company-tooltip-margin)))
         (font-lock-prepend-text-property 0 right-pt 'face selected-common-face line)
         (dolist (c splitted-c)
           (let ((pos (string-match-p c line)))
