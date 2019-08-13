@@ -105,21 +105,53 @@ You can also customize annotation `prefix` and `postfix`.
 
 ## Details
 
-Since [company](https://github.com/company-mode/company-mode) 
-granted most control to users, every company backend developer 
-has different method of implementing company backend. It is hard 
+Since [company](https://github.com/company-mode/company-mode)
+granted most control to users, every company backend developer
+has different method of implementing company backend. It is hard
 to manage all backends to one by varies of rules.
 
-If you encountered the backend that does not work with this package; try 
-add the backend to `company-fuzzy--no-prefix-backends`. Then this 
-package will try to find the list of candidates when without any prefix. 
-`company-yasnippet` is one example that doesn't accept any prefix, hence 
-if backend that doesn't gives candidates by any prefix or no prefix then 
+If you encountered the backend that does not work with this package; try
+add the backend to `company-fuzzy--no-prefix-backends`. Then this
+package will try to find the list of candidates when without any prefix.
+`company-yasnippet` is one example that doesn't accept any prefix, hence
+if backend that doesn't gives candidates by any prefix or no prefix then
 this package can't get the list of candidates to do the fuzzy work.
 
 ```el
 (add-to-list 'company-fuzzy--no-prefix-backends 'company-yasnippet)
 ```
+
+
+## Recommended Settings
+
+There are something that `company` design it weirdly, in order to make this
+plugin work smoothly I would recommend these `company`'s variables to be set.
+
+```el
+(use-package company
+  :init
+  ;; Don't require match, so you can still move your cursor as expected.
+  (setq company-require-match nil)
+  ;; Align annotation to the right side.
+  (setq company-tooltip-align-annotations t)
+  ;; Stop eclim auto save.
+  (setq company-eclim-auto-save nil)
+
+  ;; No downcase when completion.
+  (setq company-dabbrev-downcase nil)
+  :config
+
+  ;; Enable downcase only when completing the completion.
+  (defun jcs--company-complete-selection--advice-around (fn)
+    "Advice execute around `company-complete-selection' command."
+    (let ((company-dabbrev-downcase t))
+      (call-interactively fn)))
+  (advice-add 'company-complete-selection :around #'jcs--company-complete-selection--advice-around))
+```
+
+*P.S.
+For the full configuration you can check out my configuration 
+(here)[https://github.com/jcs090218/jcs-emacs-init/blob/master/.emacs.jcs/jcs-plugin.el].*
 
 
 ## Contribution
