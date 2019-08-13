@@ -138,9 +138,9 @@ plugin work smoothly I would recommend these `company`'s variables to be set.
 
   ;; Enable downcase only when completing the completion.
   (defun jcs--company-complete-selection--advice-around (fn)
-  "Advice execute around `company-complete-selection' command."
-  (let ((company-dabbrev-downcase t))
-  (call-interactively fn)))
+    "Advice execute around `company-complete-selection' command."
+    (let ((company-dabbrev-downcase t))
+      (call-interactively fn)))
   (advice-add 'company-complete-selection :around #'jcs--company-complete-selection--advice-around))
 ```
 
