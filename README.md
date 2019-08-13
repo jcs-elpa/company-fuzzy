@@ -135,7 +135,6 @@ plugin work smoothly I would recommend these `company`'s variables to be set.
   (setq company-eclim-auto-save nil)          ; Stop eclim auto save.
   (setq company-dabbrev-downcase nil)         ; No downcase when completion.
   :config
-
   ;; Enable downcase only when completing the completion.
   (defun jcs--company-complete-selection--advice-around (fn)
     "Advice execute around `company-complete-selection' command."
