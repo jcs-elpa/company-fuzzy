@@ -130,22 +130,17 @@ plugin work smoothly I would recommend these `company`'s variables to be set.
 ```el
 (use-package company
   :init
-  ;; Don't require match, so you can still move your cursor as expected.
-  (setq company-require-match nil)
-  ;; Align annotation to the right side.
-  (setq company-tooltip-align-annotations t)
-  ;; Stop eclim auto save.
-  (setq company-eclim-auto-save nil)
-
-  ;; No downcase when completion.
-  (setq company-dabbrev-downcase nil)
+  (setq company-require-match nil)            ; Don't require match, so you can still move your cursor as expected.
+  (setq company-tooltip-align-annotations t)  ; Align annotation to the right side.
+  (setq company-eclim-auto-save nil)          ; Stop eclim auto save.
+  (setq company-dabbrev-downcase nil)         ; No downcase when completion.
   :config
 
   ;; Enable downcase only when completing the completion.
   (defun jcs--company-complete-selection--advice-around (fn)
-    "Advice execute around `company-complete-selection' command."
-    (let ((company-dabbrev-downcase t))
-      (call-interactively fn)))
+  "Advice execute around `company-complete-selection' command."
+  (let ((company-dabbrev-downcase t))
+  (call-interactively fn)))
   (advice-add 'company-complete-selection :around #'jcs--company-complete-selection--advice-around))
 ```
 
