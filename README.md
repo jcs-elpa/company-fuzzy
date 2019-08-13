@@ -151,7 +151,7 @@ plugin work smoothly I would recommend these `company`'s variables to be set.
 
 *P.S.
 For the full configuration you can check out my configuration 
-(here)[https://github.com/jcs090218/jcs-emacs-init/blob/master/.emacs.jcs/jcs-plugin.el].*
+[here](https://github.com/jcs090218/jcs-emacs-init/blob/master/.emacs.jcs/jcs-plugin.el).*
 
 
 ## Contribution
