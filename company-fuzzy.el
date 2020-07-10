@@ -310,12 +310,12 @@
            (unless (gethash score scoring-table) (setf (gethash score scoring-table) '()))
            ;; Push the candidate with the target score to hash-table.
            (push cand (gethash score scoring-table))))
-       ;; Get all the keys into a list.
+       ;; Get all keys, and turn into a list.
        (maphash (lambda (score-key _cand-lst) (push score-key scoring-keys)) scoring-table)
        (setq scoring-keys (sort scoring-keys #'>))  ; Sort keys in order.
        (setq candidates '())  ; Clean up, and ready for final output.
        (dolist (key scoring-keys)
-         (let ((cands (sort (gethash key scoring-table) #'string-lessp)))
+         (let ((cands (gethash key scoring-table)))
            (setq candidates (append candidates cands)))))))
   (when company-fuzzy-prefix-ontop
     (setq candidates (company-fuzzy--sort-prefix-ontop candidates)))
