@@ -106,7 +106,6 @@
     (setq-local company-transformers (delq 'company-fuzzy--sort-candidates company-transformers))
     (advice-remove 'company-fill-propertize #'company-fuzzy--company-fill-propertize)))
 
-
 ;;;###autoload
 (define-minor-mode company-fuzzy-mode
   "Minor mode 'company-fuzzy-mode'."
@@ -137,11 +136,8 @@
 
 (defun company-fuzzy--get-backend-by-candidate (candidate)
   "Return the backend symbol by using CANDIDATE as search index."
-  (let ((result-backend nil)
-        (break-it nil)
-        (index 0))
-    (while (and (not break-it)
-                (< index (length company-fuzzy--valid-backends)))
+  (let ((result-backend nil) (break-it nil) (index 0))
+    (while (and (not break-it) (< index (length company-fuzzy--valid-backends)))
       (let ((candidates (nth index company-fuzzy--valid-candidates))
             (backend (nth index company-fuzzy--valid-backends)))
         (when (company-fuzzy--is-contain-list-string candidates candidate)
@@ -155,8 +151,7 @@
 (defun company-fuzzy--doc-as-buffer (candidate)
   "Provide doc by CANDIDATE."
   (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
-    (if (or (string= candidate "")
-            (not backend))
+    (if (or (string-empty-p candidate) (not backend))
         nil
       (ignore-errors (funcall backend 'doc-buffer candidate)))))
 
@@ -171,17 +166,15 @@
 
 (defun company-fuzzy--backend-string (candidate backend)
   "Form the BACKEND string by CANDIDATE."
-  (if (and candidate
-           company-fuzzy-show-annotation)
+  (if (and company-fuzzy-show-annotation candidate)
       (let ((backend-str (company-fuzzy--get-backend-string backend)))
-        (when (string= backend-str "") (setq backend-str "unknown"))
+        (when (string-empty-p backend-str) (setq backend-str "unknown"))
         (concat company-fuzzy-anno-prefix backend-str company-fuzzy-anno-postfix))
     ""))
 
 (defun company-fuzzy--source-anno-string (candidate backend)
   "Return the source annotation string by CANDIDATE and BACKEND."
-  (if (and candidate
-           backend)
+  (if (and candidate backend)
       (ignore-errors (funcall backend 'annotation candidate))
     ""))
 
@@ -213,8 +206,7 @@
         (font-lock-prepend-text-property 0 right-pt 'face selected-common-face line)
         (dolist (c splitted-c)
           (let ((pos (string-match-p c line)))
-            (while (and (numberp pos)
-                        (< pos right-pt))
+            (while (and (numberp pos) (< pos right-pt))
               (font-lock-prepend-text-property pos (1+ pos) 'face selected-face line)
               (setq pos (string-match-p c line (1+ pos))))))
         line)
@@ -235,18 +227,14 @@
 
 (defun company-fuzzy--match-char-exists-candidates (match-results c)
   "Fuzzy match the existing MATCH-RESULTS with character C."
-  (let ((also-match-candidates '())
-        (also-match-positions '())
+  (let ((also-match-candidates '()) (also-match-positions '())
         (candidates (car match-results))
         (match-positions (cdr match-results))
         (index 0))
     (while (< index (length candidates))
-      (let* ((cand (nth index candidates))
-             (cur-pos (nth index match-positions))
-             (pos (if cur-pos (1+ cur-pos) 1))
-             (new-pos (string-match-p c cand pos)))
-        (when (and (numberp new-pos)
-                   (<= pos new-pos))
+      (let* ((cand (nth index candidates)) (cur-pos (nth index match-positions))
+             (pos (if cur-pos (1+ cur-pos) 1)) (new-pos (string-match-p c cand pos)))
+        (when (and (numberp new-pos) (<= pos new-pos))
           (push cand also-match-candidates)
           (push new-pos also-match-positions)))
       (setq index (1+ index)))
@@ -262,8 +250,7 @@
            ;; Record all match position for all candidates, for ordering issue.
            (match-positions '())
            (index 1))
-      (while (and (not break-it)
-                  (< index (length splitted-c)))
+      (while (and (not break-it) (< index (length splitted-c)))
         (let* ((c (nth index splitted-c))
                (match-results
                 (company-fuzzy--match-char-exists-candidates (cons result-candidates
@@ -282,8 +269,7 @@
   "Sort CANDIDATES that match prefix ontop of all other selection."
   (let ((prefix-matches '())
         (check-match-str company-fuzzy--matching-reg))
-    (while (and (= (length prefix-matches) 0)
-                (not (= (length check-match-str) 1)))
+    (while (and (= (length prefix-matches) 0) (not (= (length check-match-str) 1)))
       (dolist (cand candidates)
         (when (string-match-p check-match-str cand)
           (push cand prefix-matches)
@@ -300,8 +286,7 @@
     ('alphabetic (setq candidates (sort candidates #'string-lessp)))
     ('flx
      (require 'flx)
-     (let ((scoring-table (make-hash-table))
-           (scoring-keys '()))
+     (let ((scoring-table (make-hash-table)) (scoring-keys '()))
        (dolist (cand candidates)
          (let* ((scoring (flx-score cand company-fuzzy--matching-reg))
                 ;; Ensure score is not `nil'.
@@ -327,8 +312,9 @@
 
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
-  (setq company-fuzzy--valid-backends '())
-  (setq company-fuzzy--valid-candidates '())
+  (progn  ; Clean up.
+    (setq company-fuzzy--valid-backends '())
+    (setq company-fuzzy--valid-candidates '()))
   (let ((all-candidates '()))
     (dolist (backend company-fuzzy--backends)
       (let ((temp-candidates nil))
@@ -336,9 +322,9 @@
         (when temp-candidates
           (setq all-candidates (append all-candidates temp-candidates))
           (delete-dups all-candidates)
-          ;; Record all candidates by backend as id.
-          (push backend company-fuzzy--valid-backends)
-          (push temp-candidates company-fuzzy--valid-candidates))))
+          (progn  ; Record all candidates by backend as an id.
+            (push backend company-fuzzy--valid-backends)
+            (push (copy-sequence temp-candidates) company-fuzzy--valid-candidates)))))
     all-candidates))
 
 (defun company-fuzzy-all-other-backends (command &optional arg &rest ignored)
