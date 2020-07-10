@@ -35,13 +35,11 @@
 (require 'company)
 (require 's)
 
-
 (defgroup company-fuzzy nil
   "Fuzzy matching for `company-mode'."
   :prefix "company-fuzzy-"
   :group 'tool
   :link '(url-link :tag "Repository" "https://github.com/jcs090218/company-fuzzy"))
-
 
 (defcustom company-fuzzy-sorting-backend 'alphabetic
   "Type for sorting/scoring backend."
@@ -75,7 +73,6 @@
   :type 'string
   :group 'company-fuzzy)
 
-
 (defvar company-fuzzy--no-prefix-backends '(company-yasnippet)
   "List of backends that doesn't accept prefix argument.")
 
@@ -91,9 +88,7 @@
 (defvar-local company-fuzzy--matching-reg ""
   "Record down the company current search reg/characters.")
 
-
-;;-----------------------------------------------------------------------
-;; Mode
+;;; Mode
 
 (defun company-fuzzy--enable ()
   "Record down all other backend to `company-fuzzy--backends'."
@@ -130,8 +125,7 @@
   company-fuzzy-mode company-fuzzy-turn-on-company-fuzzy-mode
   :require 'company-fuzzy)
 
-;;-----------------------------------------------------------------------
-;; Utilies
+;;; Utilies
 
 (defun company-fuzzy--is-contain-list-string (in-list in-str)
   "Check if a string IN-STR contain in any string in the string list IN-LIST."
@@ -156,8 +150,7 @@
       (setq index (1+ index)))
     result-backend))
 
-;;-----------------------------------------------------------------------
-;; Documentation
+;;; Documentation
 
 (defun company-fuzzy--doc-as-buffer (candidate)
   "Provide doc by CANDIDATE."
@@ -167,8 +160,7 @@
         nil
       (ignore-errors (funcall backend 'doc-buffer candidate)))))
 
-;;-----------------------------------------------------------------------
-;; Annotation
+;;; Annotation
 
 (defun company-fuzzy--get-backend-string (backend)
   "Get BACKEND's as a string."
@@ -200,8 +192,7 @@
          (orig-anno (company-fuzzy--source-anno-string candidate backend)))
     (concat orig-anno backend-str)))
 
-;;-----------------------------------------------------------------------
-;; Highlighting
+;;; Highlighting
 
 (defun company-fuzzy--company-fill-propertize (fnc &rest args)
   "Highlight the matching characters with original function FNC, and rest ARGS."
@@ -229,8 +220,7 @@
         line)
     (apply fnc args)))
 
-;;-----------------------------------------------------------------------
-;; Fuzzy Matching
+;;; Fuzzy Matching
 
 (defun company-fuzzy--match-char (backend c)
   "Fuzzy match the candidates with character C and current BACKEND."
@@ -286,8 +276,7 @@
           (setq index (1+ index))))
       result-candidates)))
 
-;;-----------------------------------------------------------------------
-;; Sorting / Scoring
+;;; Sorting / Scoring
 
 (defun company-fuzzy--sort-prefix-ontop (candidates)
   "Sort CANDIDATES that match prefix ontop of all other selection."
@@ -334,8 +323,7 @@
     (setq candidates (funcall company-fuzzy-sorting-function candidates)))
   candidates)
 
-;;-----------------------------------------------------------------------
-;; Core
+;;; Core
 
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
@@ -366,9 +354,7 @@
     (candidates (company-fuzzy-all-candidates))
     (doc-buffer (company-fuzzy--doc-as-buffer arg))))
 
-
 (declare-function flx-score "ext:flx.el")
-
 
 (provide 'company-fuzzy)
 ;;; company-fuzzy.el ends here
