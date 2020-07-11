@@ -33,7 +33,7 @@
 ;;; Code:
 
 (require 'company)
-(require 'cl)
+(require 'cl-lib)
 (require 's)
 
 (defgroup company-fuzzy nil
@@ -134,7 +134,7 @@
   (cl-some #'(lambda (lb-sub-symbol) (equal lb-sub-symbol in-symbol)) in-list))
 
 (defun company-fuzzy--normalize-backend-list (backends)
-  "Normalize all backend list."
+  "Normalize all BACKENDS as list."
   (let ((result-lst '()))
     (dolist (backend backends)
       (if (listp backend)
@@ -144,7 +144,11 @@
                 (push (nth index backend) result-lst))
               (setq index (1+ index))))
         (push backend result-lst)))
-    (remove-duplicates result-lst)))
+    (cl-remove-duplicates result-lst)))
+
+(defun company-fuzzy--call-backend (backend command key)
+  "Safely call BACKEND by COMMAND and KEY."
+  (ignore-errors (funcall backend command key)))
 
 (defun company-fuzzy--get-backend-by-candidate (candidate)
   "Return the backend symbol by using CANDIDATE as search index."
@@ -165,7 +169,7 @@
   (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
     (if (or (string-empty-p candidate) (not backend))
         nil
-      (ignore-errors (funcall backend 'doc-buffer candidate)))))
+      (company-fuzzy--call-backend backend 'doc-buffer candidate))))
 
 ;;; Annotation
 
@@ -187,7 +191,7 @@
 (defun company-fuzzy--source-anno-string (candidate backend)
   "Return the source annotation string by CANDIDATE and BACKEND."
   (if (and candidate backend)
-      (ignore-errors (funcall backend 'annotation candidate))
+      (company-fuzzy--call-backend backend 'annotation candidate)
     ""))
 
 (defun company-fuzzy--extract-annotation (candidate)
@@ -230,11 +234,11 @@
   "Fuzzy match the candidates with character C and current BACKEND."
   (let* ((no-prefix-backends (company-fuzzy--is-contain-list-symbol company-fuzzy--no-prefix-backends backend))
          (valid-candidates
-          (ignore-errors
-            (funcall backend 'candidates (if no-prefix-backends "" c)))))
-    (if (and (listp valid-candidates)
-             (stringp (nth 0 valid-candidates)))
-        valid-candidates
+          (company-fuzzy--call-backend backend 'candidates (if no-prefix-backends "" c))))
+    (if (listp valid-candidates)
+        (cond ((stringp (nth 0 valid-candidates))
+               valid-candidates)
+              (t nil))
       nil)))
 
 (defun company-fuzzy--match-char-exists-candidates (match-results c)
