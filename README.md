@@ -7,7 +7,7 @@
 > Fuzzy matching for `company-mode'.
 
 <p align="center">
-  <img src="./screenshot/demo.gif"/>
+  <img src="./etc/demo.gif"/>
 </p>
 
 Pure `elisp` fuzzy completion for `company-mode`. This plugin search through
