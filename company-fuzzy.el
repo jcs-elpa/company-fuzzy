@@ -235,11 +235,9 @@
   (let* ((no-prefix-backends (company-fuzzy--is-contain-list-symbol company-fuzzy--no-prefix-backends backend))
          (valid-candidates
           (company-fuzzy--call-backend backend 'candidates (if no-prefix-backends "" c))))
-    (if (listp valid-candidates)
-        (cond ((stringp (nth 0 valid-candidates))
-               valid-candidates)
-              (t nil))
-      nil)))
+    (cond ((and (listp valid-candidates) (stringp (nth 0 valid-candidates)))
+           valid-candidates)
+          (t nil))))
 
 (defun company-fuzzy--match-char-exists-candidates (match-results c)
   "Fuzzy match the existing MATCH-RESULTS with character C."
