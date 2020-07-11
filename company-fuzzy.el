@@ -279,6 +279,10 @@
 
 ;;; Sorting / Scoring
 
+(defun company-fuzzy--sort-by-length (candidates)
+  "Sort CANDIDATES by length."
+  (sort candidates (lambda (str1 str2) (< (length str1) (length str2)))))
+
 (defun company-fuzzy--sort-prefix-ontop (candidates)
   "Sort CANDIDATES that match prefix ontop of all other selection."
   (let ((prefix-matches '())
@@ -315,6 +319,7 @@
        (setq candidates '())  ; Clean up, and ready for final output.
        (dolist (key scoring-keys)
          (let ((cands (gethash key scoring-table)))
+           (setq cands (company-fuzzy--sort-by-length cands))  ; sort by length once.
            (setq candidates (append candidates cands)))))))
   (when company-fuzzy-prefix-ontop
     (setq candidates (company-fuzzy--sort-prefix-ontop candidates)))
