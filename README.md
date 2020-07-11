@@ -3,7 +3,6 @@
 [![MELPA Stable](https://stable.melpa.org/packages/company-fuzzy-badge.svg)](https://stable.melpa.org/#/company-fuzzy)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-
 # company-fuzzy
 > Fuzzy matching for `company-mode'.
 
@@ -11,10 +10,8 @@
   <img src="./screenshot/demo.gif"/>
 </p>
 
-
 Pure `elisp` fuzzy completion for `company-mode`. This plugin search through
 all the buffer local `company-backends` and fuzzy search all candidates.
-
 
 ## Features
 
@@ -24,7 +21,6 @@ program unless is necessary.
 * *Combined all backends to one backend* - Opposite to [company-try-hard](https://github.com/Wilfred/company-try-hard),
 hence all possible candidates will be shown in the auto-complete menu.
 
-
 ## Differences from other alternatives
 
 * [company-ycmd](https://github.com/abingham/emacs-ycmd)
@@ -33,7 +29,6 @@ hence all possible candidates will be shown in the auto-complete menu.
 * [company-flx](https://github.com/PythonNut/company-flx)
   * Uses library [flx](https://github.com/lewang/flx).
   * Only works with `elisp-mode` currently.
-
 
 ## Usage
 
@@ -90,7 +85,6 @@ If you set `company-fuzzy-sorting-backend` to `'flx` then
 you probably don't need this to be on because the `flx` scoring engine
 already take care of that!*
 
-
 ### For annotation
 
 You can toggle `company-fuzzy-show-annotation` for showing annotation or not.
@@ -99,11 +93,9 @@ You can toggle `company-fuzzy-show-annotation` for showing annotation or not.
 (setq company-fuzzy-show-annotation t)
 ```
 
-You can also customize annotation `prefix` and `postfix`.
+You can also customize annotation using `format` variable.
 
-* `company-fuzzy-anno-prefix` => ` <`
-* `company-fuzzy-anno-postfix` => `>`
-
+* `company-fuzzy-annotation-format` => ` <%s>`
 
 ## Details
 
@@ -122,7 +114,6 @@ this package can't get the list of candidates to do the fuzzy work.
 ```el
 (add-to-list 'company-fuzzy--no-prefix-backends 'company-yasnippet)
 ```
-
 
 ## Recommended Settings
 
@@ -146,9 +137,8 @@ plugin work smoothly I would recommend these `company`'s variables to be set.
 ```
 
 *P.S.
-For the full configuration you can check out my configuration 
+For the full configuration you can check out my configuration
 [here](https://github.com/jcs090218/jcs-emacs-init/blob/master/.emacs.jcs/jcs-plugin.el).*
-
 
 ## Contribution
 

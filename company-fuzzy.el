@@ -33,6 +33,7 @@
 ;;; Code:
 
 (require 'company)
+(require 'cl)
 (require 's)
 
 (defgroup company-fuzzy nil
@@ -63,21 +64,19 @@
   :type 'boolean
   :group 'company-fuzzy)
 
-(defcustom company-fuzzy-anno-prefix " <"
-  "Annotation string add before the source."
-  :type 'string
-  :group 'company-fuzzy)
-
-(defcustom company-fuzzy-anno-postfix ">"
-  "Annotation string add after the source."
+(defcustom company-fuzzy-annotation-format " <%s>"
+  "Annotation string format."
   :type 'string
   :group 'company-fuzzy)
 
 (defvar company-fuzzy--no-prefix-backends '(company-yasnippet)
   "List of backends that doesn't accept prefix argument.")
 
+(defvar-local company-fuzzy--recorded-backends nil
+  "Record down company local backends in current buffer.")
+
 (defvar-local company-fuzzy--backends nil
-  "Record down the company local backend in current buffer.")
+  "Company fuzzy backends we are going to use.")
 
 (defvar-local company-fuzzy--valid-backends nil
   "Pair data with `company-fuzzy--valid-candidates', for cache searching.")
@@ -92,16 +91,18 @@
 
 (defun company-fuzzy--enable ()
   "Record down all other backend to `company-fuzzy--backends'."
-  (unless company-fuzzy--backends
-    (setq company-fuzzy--backends company-backends)
+  (unless company-fuzzy--recorded-backends
+    (setq company-fuzzy--recorded-backends company-backends)
+    (setq company-fuzzy--backends (company-fuzzy--normalize-backend-list company-fuzzy--recorded-backends))
     (setq-local company-backends '(company-fuzzy-all-other-backends))
     (setq-local company-transformers (append company-transformers '(company-fuzzy--sort-candidates)))
     (advice-add 'company-fill-propertize :around #'company-fuzzy--company-fill-propertize)))
 
 (defun company-fuzzy--disable ()
   "Revert all other backend back to `company-backends'."
-  (when company-fuzzy--backends
-    (setq-local company-backends company-fuzzy--backends)
+  (when company-fuzzy--recorded-backends
+    (setq-local company-backends company-fuzzy--recorded-backends)
+    (setq company-fuzzy--recorded-backends nil)
     (setq company-fuzzy--backends nil)
     (setq-local company-transformers (delq 'company-fuzzy--sort-candidates company-transformers))
     (advice-remove 'company-fill-propertize #'company-fuzzy--company-fill-propertize)))
@@ -111,9 +112,7 @@
   "Minor mode 'company-fuzzy-mode'."
   :lighter " ComFuz"
   :group company-fuzzy
-  (if company-fuzzy-mode
-      (company-fuzzy--enable)
-    (company-fuzzy--disable)))
+  (if company-fuzzy-mode (company-fuzzy--enable) (company-fuzzy--disable)))
 
 (defun company-fuzzy-turn-on-company-fuzzy-mode ()
   "Turn on the 'company-fuzzy-mode'."
@@ -133,6 +132,19 @@
 (defun company-fuzzy--is-contain-list-symbol (in-list in-symbol)
   "Check if a symbol IN-SYMBOL contain in any symbol in the symbol list IN-LIST."
   (cl-some #'(lambda (lb-sub-symbol) (equal lb-sub-symbol in-symbol)) in-list))
+
+(defun company-fuzzy--normalize-backend-list (backends)
+  "Normalize all backend list."
+  (let ((result-lst '()))
+    (dolist (backend backends)
+      (if (listp backend)
+          (let ((index 0))
+            (dolist (back backend)
+              (when (string-match-p "company-" (symbol-name back))
+                (push (nth index backend) result-lst))
+              (setq index (1+ index))))
+        (push backend result-lst)))
+    (remove-duplicates result-lst)))
 
 (defun company-fuzzy--get-backend-by-candidate (candidate)
   "Return the backend symbol by using CANDIDATE as search index."
@@ -169,7 +181,7 @@
   (if (and company-fuzzy-show-annotation candidate)
       (let ((backend-str (company-fuzzy--get-backend-string backend)))
         (when (string-empty-p backend-str) (setq backend-str "unknown"))
-        (concat company-fuzzy-anno-prefix backend-str company-fuzzy-anno-postfix))
+        (format company-fuzzy-annotation-format backend-str))
     ""))
 
 (defun company-fuzzy--source-anno-string (candidate backend)
