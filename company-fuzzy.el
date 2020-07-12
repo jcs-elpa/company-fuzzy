@@ -55,7 +55,12 @@
   :group 'company-fuzzy)
 
 (defcustom company-fuzzy-sorting-function nil
-  "Function that gives the candidates and you do your own sorting."
+  "Function that gives all candidates and let you do your own sorting."
+  :type 'function
+  :group 'company-fuzzy)
+
+(defcustom company-fuzzy-sorting-score-function nil
+  "Function that gives candidates with same score and let you do your own sorting."
   :type 'function
   :group 'company-fuzzy)
 
@@ -320,6 +325,8 @@
        (dolist (key scoring-keys)
          (let ((cands (gethash key scoring-table)))
            (setq cands (company-fuzzy--sort-by-length cands))  ; sort by length once.
+           (when (functionp company-fuzzy-sorting-score-function)
+             (setq cands (funcall company-fuzzy-sorting-score-function cands)))
            (setq candidates (append candidates cands)))))))
   (when company-fuzzy-prefix-ontop
     (setq candidates (company-fuzzy--sort-prefix-ontop candidates)))
