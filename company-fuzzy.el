@@ -39,7 +39,7 @@
 (defgroup company-fuzzy nil
   "Fuzzy matching for `company-mode'."
   :prefix "company-fuzzy-"
-  :group 'tool
+  :group 'company
   :link '(url-link :tag "Repository" "https://github.com/jcs090218/company-fuzzy"))
 
 (defcustom company-fuzzy-sorting-backend 'alphabetic
@@ -56,12 +56,14 @@
 
 (defcustom company-fuzzy-sorting-function nil
   "Function that gives all candidates and let you do your own sorting."
-  :type 'function
+  :type '(choice (const :tag "None" nil)
+                 function)
   :group 'company-fuzzy)
 
 (defcustom company-fuzzy-sorting-score-function nil
   "Function that gives candidates with same score and let you do your own sorting."
-  :type 'function
+  :type '(choice (const :tag "None" nil)
+                 function)
   :group 'company-fuzzy)
 
 (defcustom company-fuzzy-show-annotation t
@@ -126,6 +128,7 @@
 ;;;###autoload
 (define-globalized-minor-mode global-company-fuzzy-mode
   company-fuzzy-mode company-fuzzy-turn-on-company-fuzzy-mode
+  :group 'company-fuzzy
   :require 'company-fuzzy)
 
 ;;; Utilies
