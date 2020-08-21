@@ -35,6 +35,7 @@
 (require 'company)
 (require 'cl-lib)
 (require 's)
+(require 'subr-x)
 
 (defgroup company-fuzzy nil
   "Fuzzy matching for `company-mode'."
