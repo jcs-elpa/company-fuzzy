@@ -8,7 +8,7 @@
 ;; Keyword: auto auto-complete complete fuzzy matching
 ;; Version: 0.6.0
 ;; Package-Requires: ((emacs "24.4") (company "0.8.12") (s "1.12.0"))
-;; URL: https://github.com/jcs090218/company-fuzzy
+;; URL: https://github.com/jcs-elpa/company-fuzzy
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -41,7 +41,7 @@
   "Fuzzy matching for `company-mode'."
   :prefix "company-fuzzy-"
   :group 'company
-  :link '(url-link :tag "Repository" "https://github.com/jcs090218/company-fuzzy"))
+  :link '(url-link :tag "Repository" "https://github.com/jcs-elpa/company-fuzzy"))
 
 (defcustom company-fuzzy-sorting-backend 'alphabetic
   "Type for sorting/scoring backend."
