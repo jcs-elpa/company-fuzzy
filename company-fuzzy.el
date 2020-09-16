@@ -137,7 +137,8 @@
 (defun company-fuzzy--string-match-p (regexp string &optional start)
   "Safe way to execute function `string-match-p'.
 See function `string-match-p' for arguments REGEXP, STRING and START."
-  (ignore-errors (string-match-p regexp string start)))
+  (or (ignore-errors (string-match-p regexp string start))
+      (ignore-errors (string-match-p (regexp-quote regexp) string start))))
 
 (defun company-fuzzy--is-contain-list-string (in-list in-str)
   "Check if a string IN-STR contain in any string in the string list IN-LIST."
