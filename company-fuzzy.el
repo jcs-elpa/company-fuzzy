@@ -134,6 +134,11 @@
 
 ;;; Utilies
 
+(defun company-fuzzy--string-match-p (regexp string &optional start)
+  "Safe way to execute function `string-match-p'.
+See function `string-match-p' for arguments REGEXP, STRING and START."
+  (ignore-errors (string-match-p regexp string start)))
+
 (defun company-fuzzy--is-contain-list-string (in-list in-str)
   "Check if a string IN-STR contain in any string in the string list IN-LIST."
   (cl-some #'(lambda (lb-sub-str) (string= lb-sub-str in-str)) in-list))
@@ -149,7 +154,7 @@
       (if (listp backend)
           (let ((index 0))
             (dolist (back backend)
-              (when (string-match-p "company-" (symbol-name back))
+              (when (company-fuzzy--string-match-p "company-" (symbol-name back))
                 (push (nth index backend) result-lst))
               (setq index (1+ index))))
         (push backend result-lst)))
@@ -230,10 +235,10 @@
              (right-pt (+ (length process-selection) company-tooltip-margin)))
         (font-lock-prepend-text-property 0 right-pt 'face selected-common-face line)
         (dolist (c splitted-c)
-          (let ((pos (string-match-p c line)))
+          (let ((pos (company-fuzzy--string-match-p c line)))
             (while (and (numberp pos) (< pos right-pt))
               (font-lock-prepend-text-property pos (1+ pos) 'face selected-face line)
-              (setq pos (string-match-p c line (1+ pos))))))
+              (setq pos (company-fuzzy--string-match-p c line (1+ pos))))))
         line)
     (apply fnc args)))
 
@@ -256,7 +261,7 @@
         (index 0))
     (while (< index (length candidates))
       (let* ((cand (nth index candidates)) (cur-pos (nth index match-positions))
-             (pos (if cur-pos (1+ cur-pos) 1)) (new-pos (string-match-p c cand pos)))
+             (pos (if cur-pos (1+ cur-pos) 1)) (new-pos (company-fuzzy--string-match-p c cand pos)))
         (when (and (numberp new-pos) (<= pos new-pos))
           (push cand also-match-candidates)
           (push new-pos also-match-positions)))
@@ -298,7 +303,7 @@
         (check-match-str company-fuzzy--matching-reg))
     (while (and (= (length prefix-matches) 0) (not (= (length check-match-str) 1)))
       (dolist (cand candidates)
-        (when (string-match-p check-match-str cand)
+        (when (company-fuzzy--string-match-p check-match-str cand)
           (push cand prefix-matches)
           (setq candidates (remove cand candidates))))
       (setq check-match-str (substring check-match-str 0 (1- (length check-match-str)))))
