@@ -77,8 +77,15 @@
   :type 'string
   :group 'company-fuzzy)
 
-(defvar company-fuzzy--no-prefix-backends '(company-yasnippet)
-  "List of backends that doesn't accept prefix argument.")
+(defcustom company-fuzzy-full-input-backends '(company-files)
+  "List of backends that takes in full input to do auto completion."
+  :type 'list
+  :group 'company-fuzzy)
+
+(defcustom company-fuzzy--no-prefix-backends '(company-yasnippet)
+  "List of backends that doesn't accept prefix argument."
+  :type 'list
+  :group 'company-fuzzy)
 
 (defvar-local company-fuzzy--recorded-backends nil
   "Record down company local backends in current buffer.")
@@ -354,7 +361,10 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
   (let ((all-candidates '()))
     (dolist (backend company-fuzzy--backends)
       (let ((temp-candidates nil))
-        (setq temp-candidates (company-fuzzy--match-string backend company-fuzzy--matching-reg))
+        (setq temp-candidates
+              (if (company-fuzzy--is-contain-list-symbol company-fuzzy-full-input-backends backend)
+                  (company-fuzzy--call-backend backend 'candidates company-fuzzy--matching-reg)
+                (company-fuzzy--match-string backend company-fuzzy--matching-reg)))
         (when temp-candidates
           (setq all-candidates (append all-candidates temp-candidates))
           (delete-dups all-candidates)
