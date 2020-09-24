@@ -369,9 +369,7 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
   (cl-case command
     (interactive (company-begin-backend 'company-fuzzy-all-other-backends))
     (prefix
-     (setq company-fuzzy--matching-reg (thing-at-point 'symbol))
-     (and (not (company-in-string-or-comment))
-          (company-grab-symbol)))
+     (setq company-fuzzy--matching-reg (thing-at-point 'symbol)))
     (annotation (company-fuzzy--extract-annotation arg))
     (candidates (company-fuzzy-all-candidates))
     (doc-buffer (company-fuzzy--doc-as-buffer arg))))
