@@ -104,6 +104,8 @@ granted most control to users, every company backend developer
 has different method of implementing company backend. It is hard
 to manage all backends to one by varies of rules.
 
+### Errors
+
 If you encountered the backend that does not work with this package; try
 to add the backend to `company-fuzzy-no-prefix-backends`. Then this
 package will try to find the list of candidates when without any prefix.
@@ -114,6 +116,8 @@ this package can't get the list of candidates to do the fuzzy work.
 ```el
 (add-to-list 'company-fuzzy--no-prefix-backends 'company-yasnippet)
 ```
+
+### No Responds
 
 Another special case is some backends take full input in order to get the
 full candidates. `company-files` is one of the backend that is in this
