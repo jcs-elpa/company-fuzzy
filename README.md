@@ -114,7 +114,7 @@ if backend that doesn't gives candidates by any prefix or no prefix then
 this package can't get the list of candidates to do the fuzzy work.
 
 ```el
-(add-to-list 'company-fuzzy--no-prefix-backends 'company-yasnippet)
+(add-to-list 'company-fuzzy-no-prefix-backends 'company-yasnippet)
 ```
 
 ### Take full prefix
@@ -126,7 +126,7 @@ not work after this mode is enabled. Try adding the backend to
 `company-fuzzy-full-input-backends` variable like the code snippet below.
 
 ```el
-(add-to-list 'company-fuzzy--no-prefix-backends 'company-files)
+(add-to-list 'company-fuzzy-full-input-backends 'company-files)
 ```
 
 ## Recommended Settings
