@@ -82,7 +82,7 @@
   :type 'list
   :group 'company-fuzzy)
 
-(defcustom company-fuzzy--no-prefix-backends '(company-yasnippet)
+(defcustom company-fuzzy-no-prefix-backends '(company-yasnippet)
   "List of backends that doesn't accept prefix argument."
   :type 'list
   :group 'company-fuzzy)
@@ -254,7 +254,7 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 
 (defun company-fuzzy--match-char (backend c)
   "Fuzzy match the candidates with character C and current BACKEND."
-  (let* ((no-prefix-backends (company-fuzzy--is-contain-list-symbol company-fuzzy--no-prefix-backends backend))
+  (let* ((no-prefix-backends (company-fuzzy--is-contain-list-symbol company-fuzzy-no-prefix-backends backend))
          (valid-candidates
           (company-fuzzy--call-backend backend 'candidates (if no-prefix-backends "" c))))
     (cond ((and (listp valid-candidates) (stringp (nth 0 valid-candidates)))
