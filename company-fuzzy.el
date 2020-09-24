@@ -34,6 +34,7 @@
 
 (require 'company)
 (require 'cl-lib)
+(require 'ffap)
 (require 's)
 (require 'subr-x)
 
@@ -353,6 +354,11 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 
 ;;; Core
 
+(defun company-fuzzy--get-prefix ()
+  "Set the prefix just right before completion."
+  (setq company-fuzzy--matching-reg (or (thing-at-point 'symbol)
+                                        (ffap-file-at-point))))
+
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
   (progn  ; Clean up.
@@ -378,8 +384,7 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'company-fuzzy-all-other-backends))
-    (prefix
-     (setq company-fuzzy--matching-reg (thing-at-point 'symbol)))
+    (prefix (company-fuzzy--get-prefix))
     (annotation (company-fuzzy--extract-annotation arg))
     (candidates (company-fuzzy-all-candidates))
     (doc-buffer (company-fuzzy--doc-as-buffer arg))))
