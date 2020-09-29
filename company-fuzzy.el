@@ -160,12 +160,17 @@
 
 ;;; Utilies
 
-(defun company-fuzzy-backends ()
-  "List of currently used backends."
-  (let ((lst company-fuzzy--backends))
-    (setq lst (append company-fuzzy--used-full-input-backends lst))
-    (setq lst (append company-fuzzy--used-no-prefix-backends lst))
-    (sort lst #'string-lessp)))
+(defun company-fuzzy--symbol-start ()
+  "Return symbol start point from current cursor position."
+  (save-excursion (forward-symbol -1) (point)))
+
+(defun company-fuzzy--symbol-prefix ()
+  "Return symbol prefix."
+  (let ((str (thing-at-point 'symbol))
+        (start (company-fuzzy--symbol-start)))
+    (if str
+        (substring str 0 (- (point) start))
+      nil)))
 
 (defun company-fuzzy--string-match-p (regexp string &optional start)
   "Safe way to execute function `string-match-p'.
@@ -209,6 +214,13 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
           (setq break-it t)))
       (setq index (1+ index)))
     result-backend))
+
+(defun company-fuzzy-backends ()
+  "List of currently used backends."
+  (let ((lst company-fuzzy--backends))
+    (setq lst (append company-fuzzy--used-full-input-backends lst))
+    (setq lst (append company-fuzzy--used-no-prefix-backends lst))
+    (sort lst #'string-lessp)))
 
 ;;; Documentation
 
@@ -412,7 +424,7 @@ Apply and return ALL-CANDIDATES.  BACKEND is used for identify valid candidates.
 
 (defun company-fuzzy--get-prefix ()
   "Set the prefix just right before completion."
-  (setq company-fuzzy--matching-reg (or (thing-at-point 'symbol)
+  (setq company-fuzzy--matching-reg (or (company-fuzzy--symbol-prefix)
                                         (ffap-file-at-point))))
 
 (defun company-fuzzy-all-other-backends (command &optional arg &rest ignored)
