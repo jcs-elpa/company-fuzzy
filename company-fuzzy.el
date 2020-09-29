@@ -424,7 +424,7 @@ Apply and return ALL-CANDIDATES.  BACKEND is used for identify valid candidates.
 
 (defun company-fuzzy--get-prefix ()
   "Set the prefix just right before completion."
-  (setq company-fuzzy--matching-reg (or (company-fuzzy--symbol-prefix)
+  (setq company-fuzzy--matching-reg (or (ignore-errors (company-fuzzy--symbol-prefix))
                                         (ffap-file-at-point))))
 
 (defun company-fuzzy-all-other-backends (command &optional arg &rest ignored)
