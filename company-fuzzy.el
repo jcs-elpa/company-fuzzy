@@ -51,8 +51,8 @@
                  (const :tag "flx" flx))
   :group 'company-fuzzy)
 
-(defcustom company-fuzzy-prefix-ontop t
-  "Have the matching prefix ontop."
+(defcustom company-fuzzy-prefix-on-top t
+  "Have the matching prefix on top."
   :type 'boolean
   :group 'company-fuzzy)
 
@@ -341,8 +341,8 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
   "Sort CANDIDATES by length."
   (sort candidates (lambda (str1 str2) (< (length str1) (length str2)))))
 
-(defun company-fuzzy--sort-prefix-ontop (candidates)
-  "Sort CANDIDATES that match prefix ontop of all other selection."
+(defun company-fuzzy--sort-prefix-on-top (candidates)
+  "Sort CANDIDATES that match prefix on top of all other selection."
   (let ((prefix-matches '())
         (check-match-str company-fuzzy--matching-reg))
     (while (and (= (length prefix-matches) 0) (not (= (length check-match-str) 1)))
@@ -381,8 +381,8 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
            (when (functionp company-fuzzy-sorting-score-function)
              (setq cands (funcall company-fuzzy-sorting-score-function cands)))
            (setq candidates (append candidates cands)))))))
-  (when company-fuzzy-prefix-ontop
-    (setq candidates (company-fuzzy--sort-prefix-ontop candidates)))
+  (when company-fuzzy-prefix-on-top
+    (setq candidates (company-fuzzy--sort-prefix-on-top candidates)))
   (when (functionp company-fuzzy-sorting-function)
     (setq candidates (funcall company-fuzzy-sorting-function candidates)))
   candidates)

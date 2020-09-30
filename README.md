@@ -71,13 +71,13 @@ Or implements your sorting algorithm yourself? Assgin the function to
                                        candidates))  ; Don't forget to return the candidaites!
 ```
 
-### Prefix ontop
+### Prefix On Top
 
-If you wish the prefix matchs ontop of all other selection, customize
+If you wish the prefix matchs on top of all other selection, customize
 this variable to `t` like the line below.
 
 ```el
-(setq company-fuzzy-prefix-ontop t)
+(setq company-fuzzy-prefix-on-top t)
 ```
 
 *P.S.
