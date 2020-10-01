@@ -369,9 +369,9 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
      (let ((scoring-table (make-hash-table)) (scoring-keys '()))
        (dolist (cand candidates)
          (let* ((scoring (flx-score cand company-fuzzy--prefix))
-                ;; Ensure score is not `nil'.
-                (score (if scoring (nth 0 scoring) 0)))
+                score)
            (when scoring
+             (setq score (nth 0 scoring))
              ;; For first time access score with hash-table.
              (unless (gethash score scoring-table) (setf (gethash score scoring-table) '()))
              ;; Push the candidate with the target score to hash-table.
