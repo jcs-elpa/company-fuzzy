@@ -315,6 +315,7 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
           (push new-pos also-match-positions)))
       (setq index (1+ index)))
     (cons also-match-candidates also-match-positions)))
+
 (defun company-fuzzy--match-string (backend str)
   "Fuzzy match the candidates with string STR and current BACKEND."
   (unless (string-empty-p str)
