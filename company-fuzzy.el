@@ -88,6 +88,12 @@
   :type 'list
   :group 'company-fuzzy)
 
+(defvar-local company-fuzzy--no-valid-prefix-p nil
+  "Flag to see if currentlu completion having a valid prefix.")
+
+(defvar-local company-fuzzy--all-candidates nil
+  "Record a list of all candidates.")
+
 (defvar-local company-fuzzy--recorded-backends nil
   "Record down company local backends in current buffer.")
 
@@ -361,35 +367,40 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 
 (defun company-fuzzy--sort-candidates (candidates)
   "Sort all CANDIDATES base on type of sorting backend."
-  (cl-case company-fuzzy-sorting-backend
-    (none candidates)
-    (alphabetic (setq candidates (sort candidates #'string-lessp)))
-    (flx
-     (require 'flx)
-     (let ((scoring-table (make-hash-table)) (scoring-keys '()))
-       (dolist (cand candidates)
-         (let* ((scoring (flx-score cand company-fuzzy--prefix))
-                score)
-           (when scoring
-             (setq score (nth 0 scoring))
-             ;; For first time access score with hash-table.
-             (unless (gethash score scoring-table) (setf (gethash score scoring-table) '()))
-             ;; Push the candidate with the target score to hash-table.
-             (push cand (gethash score scoring-table)))))
-       ;; Get all keys, and turn into a list.
-       (maphash (lambda (score-key _cand-lst) (push score-key scoring-keys)) scoring-table)
-       (setq scoring-keys (sort scoring-keys #'>))  ; Sort keys in order.
-       (setq candidates '())  ; Clean up, and ready for final output.
-       (dolist (key scoring-keys)
-         (let ((cands (gethash key scoring-table)))
-           (setq cands (company-fuzzy--sort-by-length cands))  ; sort by length once.
-           (when (functionp company-fuzzy-sorting-score-function)
-             (setq cands (funcall company-fuzzy-sorting-score-function cands)))
-           (setq candidates (append candidates cands)))))))
-  (when company-fuzzy-prefix-on-top
-    (setq candidates (company-fuzzy--sort-prefix-on-top candidates)))
-  (when (functionp company-fuzzy-sorting-function)
-    (setq candidates (funcall company-fuzzy-sorting-function candidates)))
+  (if company-fuzzy--no-valid-prefix-p
+      ;; TODO: The `candidates' does not match the output from
+      ;; `company-fuzzy-all-candidates' function. Hence we intercept
+      ;; all the candidates over here by setting it directly to
+      ;; `company-fuzzy--all-candidates'.
+      (setq candidates company-fuzzy--all-candidates)
+    (cl-case company-fuzzy-sorting-backend
+      (none candidates)
+      (alphabetic (setq candidates (sort candidates #'string-lessp)))
+      (flx
+       (require 'flx)
+       (let ((scoring-table (make-hash-table)) (scoring-keys '()))
+         (dolist (cand candidates)
+           (let* ((scoring (flx-score cand company-fuzzy--prefix))
+                  (score (if scoring (nth 0 scoring) 0)))
+             (when scoring
+               ;; For first time access score with hash-table.
+               (unless (gethash score scoring-table) (setf (gethash score scoring-table) '()))
+               ;; Push the candidate with the target score to hash-table.
+               (push cand (gethash score scoring-table)))))
+         ;; Get all keys, and turn into a list.
+         (maphash (lambda (score-key _cand-lst) (push score-key scoring-keys)) scoring-table)
+         (setq scoring-keys (sort scoring-keys #'>))  ; Sort keys in order.
+         (setq candidates '())  ; Clean up, and ready for final output.
+         (dolist (key scoring-keys)
+           (let ((cands (gethash key scoring-table)))
+             (setq cands (company-fuzzy--sort-by-length cands))  ; sort by length once.
+             (when (functionp company-fuzzy-sorting-score-function)
+               (setq cands (funcall company-fuzzy-sorting-score-function cands)))
+             (setq candidates (append candidates cands)))))))
+    (when company-fuzzy-prefix-on-top
+      (setq candidates (company-fuzzy--sort-prefix-on-top candidates)))
+    (when (functionp company-fuzzy-sorting-function)
+      (setq candidates (funcall company-fuzzy-sorting-function candidates))))
   candidates)
 
 ;;; Core
@@ -406,10 +417,20 @@ Apply and return ALL-CANDIDATES.  BACKEND is used for identify valid candidates.
 
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
-  (progn  ; Clean up.
-    (setq company-fuzzy--valid-backends '())
-    (setq company-fuzzy--valid-candidates '()))
+  (setq company-fuzzy--valid-backends '()  ; Clean up.
+        company-fuzzy--valid-candidates '())
   (let ((all-candidates '()) temp-candidates)
+    ;; Normal
+    (dolist (backend company-fuzzy--backends)
+      ;; NOTE: For normal backends, you can call the same as No Prefix backends.
+      ;; But everything is quite slow; hence we use the `company-fuzzy--match-string'
+      ;; function to limit the overall matching candidates.
+      (setq temp-candidates
+            (if company-fuzzy--no-valid-prefix-p
+                (company-fuzzy--call-backend backend 'candidates company-fuzzy--prefix)
+              (company-fuzzy--match-string backend company-fuzzy--prefix)))
+      (setq all-candidates (company-fuzzy--found-candidates
+                            all-candidates temp-candidates backend)))
     ;; Full Input
     (dolist (backend company-fuzzy--used-full-input-backends)
       (setq temp-candidates (company-fuzzy--call-backend backend 'candidates company-fuzzy--prefix))
@@ -420,20 +441,19 @@ Apply and return ALL-CANDIDATES.  BACKEND is used for identify valid candidates.
       (setq temp-candidates (company-fuzzy--call-backend backend 'candidates ""))
       (setq all-candidates (company-fuzzy--found-candidates
                             all-candidates temp-candidates backend)))
-    ;; Normal
-    (dolist (backend company-fuzzy--backends)
-      ;; NOTE: For normal backends, you can call the same as No Prefix backends.
-      ;; But everything is quite slow; hence we use the `company-fuzzy--match-string'
-      ;; function to limit the overall matching candidates.
-      (setq temp-candidates (company-fuzzy--match-string backend company-fuzzy--prefix))
-      (setq all-candidates (company-fuzzy--found-candidates
-                            all-candidates temp-candidates backend)))
-    (delete-dups all-candidates)))
+    (setq all-candidates (delete-dups all-candidates)
+          company-fuzzy--all-candidates all-candidates)
+    all-candidates))
 
 (defun company-fuzzy--get-prefix ()
   "Set the prefix just right before completion."
-  (setq company-fuzzy--prefix (or (ignore-errors (company-fuzzy--symbol-prefix))
-                                  (ffap-file-at-point))))
+  (setq company-fuzzy--no-valid-prefix-p nil
+        company-fuzzy--prefix (or (ignore-errors (company-fuzzy--symbol-prefix))
+                                  (ffap-file-at-point)
+                                  (progn
+                                    (setq company-fuzzy--no-valid-prefix-p t)
+                                    (or (ignore-errors (string (char-before)))
+                                        "")))))
 
 (defun company-fuzzy-all-other-backends (command &optional arg &rest ignored)
   "Backend source for all other backend except this backend, COMMAND, ARG, IGNORED."
