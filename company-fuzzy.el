@@ -362,9 +362,9 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 (defun company-fuzzy--sort-candidates (candidates)
   "Sort all CANDIDATES base on type of sorting backend."
   (cl-case company-fuzzy-sorting-backend
-    ('none candidates)
-    ('alphabetic (setq candidates (sort candidates #'string-lessp)))
-    ('flx
+    (none candidates)
+    (alphabetic (setq candidates (sort candidates #'string-lessp)))
+    (flx
      (require 'flx)
      (let ((scoring-table (make-hash-table)) (scoring-keys '()))
        (dolist (cand candidates)
