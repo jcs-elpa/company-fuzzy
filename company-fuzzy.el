@@ -88,6 +88,11 @@
   :type 'list
   :group 'company-fuzzy)
 
+(defcustom company-fuzzy-trigger-symbols '("." "->")
+  "List of symbols that allow trigger company when there is no prefix."
+  :type 'list
+  :group 'company-fuzzy)
+
 (defvar-local company-fuzzy--no-valid-prefix-p nil
   "Flag to see if currentlu completion having a valid prefix.")
 
@@ -170,17 +175,29 @@
   "Return non-nil if CANDIDATES is list of valid candidates."
   (ignore-errors (stringp (nth 0 candidates))))
 
+(defun company-fuzzy--last-symbol-end ()
+  "Return symbol start point from current cursor position."
+  (ignore-errors (save-excursion (forward-symbol -1) (forward-symbol 1) (point))))
+
 (defun company-fuzzy--symbol-start ()
   "Return symbol start point from current cursor position."
-  (save-excursion (forward-symbol -1) (point)))
+  (ignore-errors (save-excursion (forward-symbol -1) (point))))
 
 (defun company-fuzzy--symbol-prefix ()
   "Return symbol prefix."
-  (let ((str (thing-at-point 'symbol))
-        (start (company-fuzzy--symbol-start)))
-    (if str
-        (substring str 0 (- (point) start))
-      nil)))
+  (let ((str (thing-at-point 'symbol)) start end)
+    (cond
+     (str
+      (setq start (company-fuzzy--symbol-start))
+      (ignore-errors (substring str 0 (- (point) start))))
+     (t
+      (setq end (company-fuzzy--last-symbol-end))
+      (ignore-errors (string-trim (substring (buffer-string) (1- end) (point))))))))
+
+(defun company-fuzzy--trigger-prefix-p ()
+  "Check if current prefix a trigger prefix."
+  (company-fuzzy--is-contain-list-string company-fuzzy-trigger-symbols
+                                         company-fuzzy--prefix))
 
 (defun company-fuzzy--string-match-p (regexp string &optional start)
   "Safe way to execute function `string-match-p'.
@@ -418,7 +435,8 @@ Apply and return ALL-CANDIDATES.  BACKEND is used for identify valid candidates.
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
   (setq company-fuzzy--valid-backends '()  ; Clean up.
-        company-fuzzy--valid-candidates '())
+        company-fuzzy--valid-candidates '()
+        company-fuzzy--no-valid-prefix-p (company-fuzzy--trigger-prefix-p))
   (let ((all-candidates '()) temp-candidates)
     ;; Normal
     (dolist (backend company-fuzzy--backends)
@@ -449,11 +467,7 @@ Apply and return ALL-CANDIDATES.  BACKEND is used for identify valid candidates.
   "Set the prefix just right before completion."
   (setq company-fuzzy--no-valid-prefix-p nil
         company-fuzzy--prefix (or (ignore-errors (company-fuzzy--symbol-prefix))
-                                  (ffap-file-at-point)
-                                  (progn
-                                    (setq company-fuzzy--no-valid-prefix-p t)
-                                    (or (ignore-errors (string (char-before)))
-                                        "")))))
+                                  (ffap-file-at-point))))
 
 (defun company-fuzzy-all-other-backends (command &optional arg &rest ignored)
   "Backend source for all other backend except this backend, COMMAND, ARG, IGNORED."
