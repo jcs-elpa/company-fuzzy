@@ -93,7 +93,7 @@
   :type 'list
   :group 'company-fuzzy)
 
-(defcustom company-fuzzy-completion-separator "[ \t\r\n]\\|\\_<"
+(defcustom company-fuzzy-completion-separator "[ \t\r\n]\\|\\_<\\|\\_>"
   "Use to identify the completion unit."
   :type 'string
   :group 'company-fuzzy)
@@ -184,13 +184,15 @@
   "Return symbol start point from current cursor position."
   (ignore-errors
     (save-excursion
+      (forward-char -1)
       (re-search-backward company-fuzzy-completion-separator)
       (point))))
 
 (defun company-fuzzy--symbol-prefix ()
   "Return symbol prefix."
   (let ((start (company-fuzzy--symbol-start)))
-    (ignore-errors (substring (buffer-string) (1- start) (1- (point))))))
+    (ignore-errors
+      (string-trim (substring (buffer-string) (1- start) (1- (point)))))))
 
 (defun company-fuzzy--trigger-prefix-p ()
   "Check if current prefix a trigger prefix."
