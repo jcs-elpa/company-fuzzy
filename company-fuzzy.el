@@ -94,7 +94,7 @@
   :group 'company-fuzzy)
 
 (defvar-local company-fuzzy--no-valid-prefix-p nil
-  "Flag to see if currentlu completion having a valid prefix.")
+  "Flag to see if currently completion having a valid prefix.")
 
 (defvar-local company-fuzzy--all-candidates nil
   "Record a list of all candidates.")
