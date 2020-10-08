@@ -93,6 +93,11 @@
   :type 'list
   :group 'company-fuzzy)
 
+(defcustom company-fuzzy-completion-separator "[ \t\r\n]\\|\\_<"
+  "Use to identify the completion unit."
+  :type 'string
+  :group 'company-fuzzy)
+
 (defvar-local company-fuzzy--no-valid-prefix-p nil
   "Flag to see if currently completion having a valid prefix.")
 
@@ -175,24 +180,17 @@
   "Return non-nil if CANDIDATES is list of valid candidates."
   (ignore-errors (stringp (nth 0 candidates))))
 
-(defun company-fuzzy--last-symbol-end ()
-  "Return symbol start point from current cursor position."
-  (ignore-errors (save-excursion (forward-symbol -1) (forward-symbol 1) (point))))
-
 (defun company-fuzzy--symbol-start ()
   "Return symbol start point from current cursor position."
-  (ignore-errors (save-excursion (forward-symbol -1) (point))))
+  (ignore-errors
+    (save-excursion
+      (re-search-backward company-fuzzy-completion-separator)
+      (point))))
 
 (defun company-fuzzy--symbol-prefix ()
   "Return symbol prefix."
-  (let ((str (thing-at-point 'symbol)) start end)
-    (cond
-     (str
-      (setq start (company-fuzzy--symbol-start))
-      (ignore-errors (substring str 0 (- (point) start))))
-     (t
-      (setq end (company-fuzzy--last-symbol-end))
-      (ignore-errors (string-trim (substring (buffer-string) (1- end) (point))))))))
+  (let ((start (company-fuzzy--symbol-start)))
+    (ignore-errors (substring (buffer-string) (1- start) (1- (point))))))
 
 (defun company-fuzzy--trigger-prefix-p ()
   "Check if current prefix a trigger prefix."
