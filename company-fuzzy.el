@@ -422,6 +422,17 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 
 ;;; Core
 
+(defun company-fuzzy--filter-first-match-char (candidates)
+  "Filter CANDIDATES first matching character."
+  (let* ((result '())
+         (first-char (or (ignore-errors (substring company-fuzzy--prefix 0 1)) ""))
+         first-char-cand)
+    (dolist (cand candidates)
+      (setq first-char-cand (or (ignore-errors (substring cand 0 1)) ""))
+      (when (string= first-char first-char-cand)
+        (push cand result)))
+    result))
+
 (defun company-fuzzy--found-candidates (all-candidates temp-candidates backend)
   "Do stuff after we found TEMP-CANDIDATES.
 Apply and return ALL-CANDIDATES.  BACKEND is used for identify valid candidates."
@@ -457,6 +468,7 @@ Apply and return ALL-CANDIDATES.  BACKEND is used for identify valid candidates.
     ;; No Prefix
     (dolist (backend company-fuzzy--used-no-prefix-backends)
       (setq temp-candidates (company-fuzzy--call-backend backend 'candidates ""))
+      (setq temp-candidates (company-fuzzy--filter-first-match-char temp-candidates))
       (setq all-candidates (company-fuzzy--found-candidates
                             all-candidates temp-candidates backend)))
     (setq all-candidates (delete-dups all-candidates)
