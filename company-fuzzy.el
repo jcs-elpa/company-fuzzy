@@ -310,8 +310,10 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 
 (defun company-fuzzy--insert-candidate (candidate)
   "Insertion for CANDIDATE."
+  ;; NOTE: Here we force to change `company-prefix' so the completion
+  ;; will do what we expected.
   (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
-    (setq company-prefix (company-fuzzy--complete-backend-prefix backend))))
+    (setq company-prefix (company-fuzzy--backend-prefix-complete backend))))
 
 ;;
 ;; (@* "Sorting / Scoring" )
@@ -348,7 +350,7 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
              (plst-data (company-fuzzy--alist-map)))
          (dolist (cand candidates)
            (let* ((backend (plist-get plst-data cand))
-                  (prefix (company-fuzzy--match-backend-prefix backend)))
+                  (prefix (company-fuzzy--backend-prefix-match backend)))
              (let* ((scoring (flx-score cand prefix))
                     (score (if scoring (nth 0 scoring) 0)))
                (when scoring
@@ -376,13 +378,13 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 ;; (@* "Prefix" )
 ;;
 
-(defun company-fuzzy--complete-backend-prefix (backend)
+(defun company-fuzzy--backend-prefix-complete (backend)
   "Return prefix for each BACKEND while doing completion."
   (cl-case backend
     (company-files (company-files 'prefix))
-    (t (company-fuzzy--match-backend-prefix backend))))
+    (t (company-fuzzy--backend-prefix-match backend))))
 
-(defun company-fuzzy--match-backend-prefix (backend)
+(defun company-fuzzy--backend-prefix-match (backend)
   "Return prefix for each BACKEND while matching candidates."
   (cl-case backend
     (company-capf (thing-at-point 'symbol))
@@ -395,7 +397,7 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
            last))))
     (t company-fuzzy--prefix)))
 
-(defun company-fuzzy--get-backend-prefix (backend)
+(defun company-fuzzy--backend-prefix-get (backend)
   "Return prefix for each BACKEND while getting candidates."
   (cl-case backend
     (company-files
@@ -471,14 +473,16 @@ of (candidate . backend) data with no duplication."
   "Return the list of all candidates."
   (setq company-fuzzy--alist-backends-candidates '()  ; Clean up.
         company-fuzzy--no-valid-prefix-p (company-fuzzy--trigger-prefix-p))
-  (let (temp-candidates backend-prefix match-prefix)
+  (let (temp-candidates prefix-get prefix-match prefix-com)
     (dolist (backend company-fuzzy--backends)
-      (setq backend-prefix (company-fuzzy--get-backend-prefix backend)
-            match-prefix (company-fuzzy--match-backend-prefix backend))
-      (when backend-prefix
-        (setq temp-candidates (company-fuzzy--call-backend backend 'candidates backend-prefix))
-        (when (and (not company-fuzzy--no-valid-prefix-p) match-prefix)
-          (setq temp-candidates (company-fuzzy--match-string match-prefix temp-candidates))))
+      ;; TODO: Decide what prefix to use.
+      (setq prefix-get (company-fuzzy--backend-prefix-get backend)
+            prefix-match (company-fuzzy--backend-prefix-match backend)
+            prefix-com (company-fuzzy--backend-prefix-complete backend))
+      (when prefix-get
+        (setq temp-candidates (company-fuzzy--call-backend backend 'candidates prefix-get))
+        (when (and (not company-fuzzy--no-valid-prefix-p) prefix-match)
+          (setq temp-candidates (company-fuzzy--match-string prefix-com temp-candidates))))
       (when (company-fuzzy--valid-candidates-p temp-candidates)
         (delete-dups temp-candidates)
         (push (cons backend (copy-sequence temp-candidates))
