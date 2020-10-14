@@ -247,10 +247,7 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 
 (defun company-fuzzy--get-backend-string (backend)
   "Get BACKEND's as a string."
-  (if backend
-      (let ((backend-str (symbol-name backend)))
-        (s-replace "company-" "" backend-str))
-    ""))
+  (if backend (s-replace "company-" "" (symbol-name backend)) ""))
 
 (defun company-fuzzy--backend-string (candidate backend)
   "Form the BACKEND string by CANDIDATE."
