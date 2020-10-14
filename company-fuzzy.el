@@ -474,10 +474,11 @@ of (candidate . backend) data with no duplication."
   (let (temp-candidates backend-prefix match-prefix)
     (dolist (backend company-fuzzy--backends)
       (setq backend-prefix (company-fuzzy--get-backend-prefix backend)
-            match-prefix (company-fuzzy--match-backend-prefix backend)
-            temp-candidates (company-fuzzy--call-backend backend 'candidates backend-prefix))
-      (unless company-fuzzy--no-valid-prefix-p
-        (setq temp-candidates (company-fuzzy--match-string match-prefix temp-candidates)))
+            match-prefix (company-fuzzy--match-backend-prefix backend))
+      (when backend-prefix
+        (setq temp-candidates (company-fuzzy--call-backend backend 'candidates backend-prefix))
+        (when (and (not company-fuzzy--no-valid-prefix-p) match-prefix)
+          (setq temp-candidates (company-fuzzy--match-string match-prefix temp-candidates))))
       (when (company-fuzzy--valid-candidates-p temp-candidates)
         (delete-dups temp-candidates)
         (push (cons backend (copy-sequence temp-candidates))
