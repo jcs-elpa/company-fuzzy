@@ -78,13 +78,8 @@
   :type 'string
   :group 'company-fuzzy)
 
-(defcustom company-fuzzy-full-input-backends '(company-files)
-  "List of backends that takes in full input to do auto completion."
-  :type 'list
-  :group 'company-fuzzy)
-
-(defcustom company-fuzzy-no-prefix-backends '(company-yasnippet)
-  "List of backends that doesn't accept prefix argument."
+(defcustom company-fuzzy-history-backends '(company-yasnippet)
+  "List of backends that kept the history to do fuzzy sorting."
   :type 'list
   :group 'company-fuzzy)
 
@@ -112,6 +107,9 @@
 
 (defvar-local company-fuzzy--alist-backends-candidates nil
   "Store list data of '(backend . candidates)'.")
+
+(defvar-local company-fuzzy--plist-history '()
+  "Store list data of history data '(backend . candidates)'.")
 
 ;;
 ;; (@* "External" )
@@ -481,6 +479,14 @@ of (candidate . backend) data with no duplication."
         (setq temp-candidates (company-fuzzy--call-backend backend 'candidates prefix-get))
         (when (and (not company-fuzzy--no-valid-prefix-p) prefix-com)
           (setq temp-candidates (company-fuzzy--match-string prefix-com temp-candidates))))
+      ;; --- History work. ---------------------------------
+      (when (company-fuzzy--is-contain-list-symbol company-fuzzy-history-backends backend)
+        (let ((cands-history (plist-get company-fuzzy--plist-history backend)))
+          (setq temp-candidates (append cands-history temp-candidates))
+          (delete-dups temp-candidates)
+          (setq company-fuzzy--plist-history
+                (plist-put company-fuzzy--plist-history backend temp-candidates))))
+      ;; ---------------------------------------------------
       (when (company-fuzzy--valid-candidates-p temp-candidates)
         (delete-dups temp-candidates)
         (push (cons backend (copy-sequence temp-candidates))
