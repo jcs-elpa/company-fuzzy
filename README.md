@@ -97,38 +97,6 @@ You can also customize annotation using `format` variable.
 
 * `company-fuzzy-annotation-format` => ` <%s>`
 
-## Details
-
-Since [company](https://github.com/company-mode/company-mode)
-granted most control to users, every company backend developer
-has different method of implementing company backend. It is hard
-to manage all backends to one by varies of rules.
-
-### Takes no prefix
-
-If you encountered the backend that does not work with this package; try
-to add the backend to `company-fuzzy-no-prefix-backends`. Then this
-package will try to find the list of candidates when without any prefix.
-`company-yasnippet` is one example that doesn't accept any prefix, hence
-if backend that doesn't gives candidates by any prefix or no prefix then
-this package can't get the list of candidates to do the fuzzy work.
-
-```el
-(add-to-list 'company-fuzzy-no-prefix-backends 'company-yasnippet)
-```
-
-### Take full prefix
-
-Another special case is some backends take full input in order to get the
-full candidates. `company-files` is one of the backend that is in this
-special case. If you encountered a backend that use to work; yet it does
-not work after this mode is enabled. Try adding the backend to
-`company-fuzzy-full-input-backends` variable like the code snippet below.
-
-```el
-(add-to-list 'company-fuzzy-full-input-backends 'company-files)
-```
-
 ## Recommended Settings
 
 There are something that `company` design it weirdly, in order to make this
