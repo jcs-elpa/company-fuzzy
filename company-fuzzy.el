@@ -473,15 +473,13 @@ of (candidate . backend) data with no duplication."
   "Return the list of all candidates."
   (setq company-fuzzy--alist-backends-candidates '()  ; Clean up.
         company-fuzzy--no-valid-prefix-p (company-fuzzy--trigger-prefix-p))
-  (let (temp-candidates prefix-get prefix-match prefix-com)
+  (let (temp-candidates prefix-get prefix-com)
     (dolist (backend company-fuzzy--backends)
-      ;; TODO: Decide what prefix to use.
       (setq prefix-get (company-fuzzy--backend-prefix-get backend)
-            prefix-match (company-fuzzy--backend-prefix-match backend)
             prefix-com (company-fuzzy--backend-prefix-complete backend))
       (when prefix-get
         (setq temp-candidates (company-fuzzy--call-backend backend 'candidates prefix-get))
-        (when (and (not company-fuzzy--no-valid-prefix-p) prefix-match)
+        (when (and (not company-fuzzy--no-valid-prefix-p) prefix-com)
           (setq temp-candidates (company-fuzzy--match-string prefix-com temp-candidates))))
       (when (company-fuzzy--valid-candidates-p temp-candidates)
         (delete-dups temp-candidates)
