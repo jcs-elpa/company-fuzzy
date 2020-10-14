@@ -505,14 +505,23 @@ of (candidate . backend) data with no duplication."
         ;; to function `flx-score'.
         (when (and (not company-fuzzy--no-valid-prefix-p) prefix-com)
           (setq temp-candidates (company-fuzzy--match-string prefix-com temp-candidates))))
-      ;; --- History work. ---------------------------------
+      ;; NOTE: History work.
+      ;;
+      ;; Here we check if BACKEND a history type of backend. And if it does; then
+      ;; it will ensure considering the history candidates to the new candidates.
       (when (company-fuzzy--is-contain-list-symbol company-fuzzy-history-backends backend)
         (let ((cands-history (plist-get company-fuzzy--plist-history backend)))
           (setq temp-candidates (append cands-history temp-candidates))
           (delete-dups temp-candidates)
           (setq company-fuzzy--plist-history
                 (plist-put company-fuzzy--plist-history backend temp-candidates))))
-      ;; ---------------------------------------------------
+      ;; NOTE: Made the final completion.
+      ;;
+      ;; This is the final ensure step before processing it to scoring phase.
+      ;; We confirm candidates by adding it to `company-fuzzy--alist-backends-candidates'.
+      ;; The function `company-fuzzy--valid-candidates-p' is use to ensure the
+      ;; candidates returns a list of strings, which this is the current only valid
+      ;; type to this package.
       (when (company-fuzzy--valid-candidates-p temp-candidates)
         (delete-dups temp-candidates)
         (push (cons backend (copy-sequence temp-candidates))
