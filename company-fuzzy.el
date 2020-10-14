@@ -98,53 +98,40 @@
   :type 'string
   :group 'company-fuzzy)
 
-(defvar-local company-fuzzy--no-valid-prefix-p nil
-  "Flag to see if currently completion having a valid prefix.")
-
-(defvar-local company-fuzzy--all-candidates nil
-  "Record a list of all candidates.")
-
-(defvar-local company-fuzzy--recorded-backends nil
-  "Record down company local backends in current buffer.")
+(defvar-local company-fuzzy--prefix ""
+  "Record down the company current search reg/characters.")
 
 (defvar-local company-fuzzy--backends nil
   "Company fuzzy backends we are going to use.")
 
-(defvar-local company-fuzzy--used-full-input-backends '()
-  "List of `full-input-backends' backends that are used.")
+(defvar-local company-fuzzy--recorded-backends nil
+  "Record down company local backends in current buffer.")
 
-(defvar-local company-fuzzy--used-no-prefix-backends '()
-  "List of `no-prefix-backends' backends that are used.")
+(defvar-local company-fuzzy--no-valid-prefix-p nil
+  "Flag to see if currently completion having a valid prefix.")
 
-(defvar-local company-fuzzy--valid-backends nil
-  "Pair data with `company-fuzzy--valid-candidates', for cache searching.")
+(defvar-local company-fuzzy--alist-backends-candidates nil
+  "Store list data of '(backend . candidates)'.")
 
-(defvar-local company-fuzzy--valid-candidates nil
-  "Pair data with `company-fuzzy--valid-backends', for cache searching.")
+;;
+;; (@* "External" )
+;;
 
-(defvar-local company-fuzzy--prefix ""
-  "Record down the company current search reg/characters.")
+(declare-function flx-score "ext:flx.el")
 
-;;; Mode
+;;
+;; (@* "Mode" )
+;;
 
 (defun company-fuzzy--enable ()
   "Record down all other backend to `company-fuzzy--backends'."
   (unless company-fuzzy--recorded-backends
     (setq company-fuzzy--recorded-backends company-backends)
     (setq company-fuzzy--backends (company-fuzzy--normalize-backend-list company-fuzzy--recorded-backends))
-    (let ((backend-lst company-fuzzy--backends))
-      (dolist (backend backend-lst)
-        (when (company-fuzzy--is-contain-list-symbol company-fuzzy-full-input-backends
-                                                     backend)
-          (push backend company-fuzzy--used-full-input-backends)
-          (setq company-fuzzy--backends (remove backend company-fuzzy--backends)))
-        (when (company-fuzzy--is-contain-list-symbol company-fuzzy-no-prefix-backends
-                                                     backend)
-          (push backend company-fuzzy--used-no-prefix-backends)
-          (setq company-fuzzy--backends (remove backend company-fuzzy--backends)))))
     (setq-local company-backends '(company-fuzzy-all-other-backends))
     (setq-local company-transformers (append company-transformers '(company-fuzzy--sort-candidates)))
-    (advice-add 'company-fill-propertize :around #'company-fuzzy--company-fill-propertize)))
+    (advice-add 'company-fill-propertize :around #'company-fuzzy--company-fill-propertize)
+    (advice-add 'company--insert-candidate :before #'company-fuzzy--insert-candidate)))
 
 (defun company-fuzzy--disable ()
   "Revert all other backend back to `company-backends'."
@@ -152,10 +139,9 @@
     (setq-local company-backends company-fuzzy--recorded-backends)
     (setq company-fuzzy--recorded-backends nil)
     (setq company-fuzzy--backends nil)
-    (setq company-fuzzy--used-full-input-backends '())
-    (setq company-fuzzy--used-no-prefix-backends '())
     (setq-local company-transformers (delq 'company-fuzzy--sort-candidates company-transformers))
-    (advice-remove 'company-fill-propertize #'company-fuzzy--company-fill-propertize)))
+    (advice-remove 'company-fill-propertize #'company-fuzzy--company-fill-propertize)
+    (advice-remove 'company--insert-candidate #'company-fuzzy--insert-candidate)))
 
 ;;;###autoload
 (define-minor-mode company-fuzzy-mode
@@ -174,7 +160,9 @@
   :group 'company-fuzzy
   :require 'company-fuzzy)
 
-;;; Utilies
+;;
+;; (@* "Utilies" )
+;;
 
 (defun company-fuzzy--valid-candidates-p (candidates)
   "Return non-nil if CANDIDATES is list of valid candidates."
@@ -188,8 +176,8 @@
       (re-search-backward company-fuzzy-completion-separator)
       (point))))
 
-(defun company-fuzzy--symbol-prefix ()
-  "Return symbol prefix."
+(defun company-fuzzy--generic-prefix ()
+  "Return the most generic prefix."
   (let ((start (company-fuzzy--symbol-start)))
     (ignore-errors
       (string-trim (substring (buffer-string) (1- start) (1- (point)))))))
@@ -224,6 +212,7 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
                 (push (nth index backend) result-lst))
               (setq index (1+ index))))
         (push backend result-lst)))
+    (setq result-lst (reverse result-lst))
     (cl-remove-duplicates result-lst)))
 
 (defun company-fuzzy--call-backend (backend command key)
@@ -232,24 +221,20 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 
 (defun company-fuzzy--get-backend-by-candidate (candidate)
   "Return the backend symbol by using CANDIDATE as search index."
-  (let ((result-backend nil) (break-it nil) (index 0))
-    (while (and (not break-it) (< index (length company-fuzzy--valid-backends)))
-      (let ((candidates (nth index company-fuzzy--valid-candidates))
-            (backend (nth index company-fuzzy--valid-backends)))
+  (let ((index 0) break-it result-backend)
+    (while (and (not break-it) (< index (length company-fuzzy--alist-backends-candidates)))
+      (let* ((backend-data (nth index company-fuzzy--alist-backends-candidates))
+             (backend (car backend-data))
+             (candidates (cdr backend-data)))
         (when (company-fuzzy--is-contain-list-string candidates candidate)
           (setq result-backend backend)
           (setq break-it t)))
       (setq index (1+ index)))
     result-backend))
 
-(defun company-fuzzy-backends ()
-  "List of currently used backends."
-  (let ((lst company-fuzzy--backends))
-    (setq lst (append company-fuzzy--used-full-input-backends lst))
-    (setq lst (append company-fuzzy--used-no-prefix-backends lst))
-    (sort lst #'string-lessp)))
-
-;;; Documentation
+;;
+;; (@* "Documentation" )
+;;
 
 (defun company-fuzzy--doc-as-buffer (candidate)
   "Provide doc by CANDIDATE."
@@ -258,7 +243,9 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
         nil
       (company-fuzzy--call-backend backend 'doc-buffer candidate))))
 
-;;; Annotation
+;;
+;; (@* "Annotation" )
+;;
 
 (defun company-fuzzy--get-backend-string (backend)
   "Get BACKEND's as a string."
@@ -288,7 +275,9 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
          (orig-anno (company-fuzzy--source-anno-string candidate backend)))
     (concat orig-anno backend-str)))
 
-;;; Highlighting
+;;
+;; (@* "Highlighting" )
+;;
 
 (defun company-fuzzy--company-fill-propertize (fnc &rest args)
   "Highlight the matching characters with original function FNC, and rest ARGS."
@@ -308,61 +297,25 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
              (right-pt (+ (length process-selection) company-tooltip-margin)))
         (font-lock-prepend-text-property 0 right-pt 'face selected-common-face line)
         (dolist (c splitted-c)
-          (let ((pos (company-fuzzy--string-match-p c line)))
+          (let ((pos (company-fuzzy--string-match-p (regexp-quote c) line)))
             (while (and (numberp pos) (< pos right-pt))
               (font-lock-prepend-text-property pos (1+ pos) 'face selected-face line)
-              (setq pos (company-fuzzy--string-match-p c line (1+ pos))))))
+              (setq pos (company-fuzzy--string-match-p (regexp-quote c) line (1+ pos))))))
         line)
     (apply fnc args)))
 
-;;; Fuzzy Matching
+;;
+;; (@* "Completion" )
+;;
 
-(defun company-fuzzy--match-char (backend c)
-  "Fuzzy match the candidates with character C and current BACKEND."
-  (let ((valid-candidates (company-fuzzy--call-backend backend 'candidates c)))
-    (cond ((and (listp valid-candidates) (stringp (nth 0 valid-candidates)))
-           valid-candidates)
-          (t nil))))
+(defun company-fuzzy--insert-candidate (candidate)
+  "Insertion for CANDIDATE."
+  (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
+    (setq company-prefix (company-fuzzy--complete-backend-prefix backend))))
 
-(defun company-fuzzy--match-char-exists-candidates (match-results c)
-  "Fuzzy match the existing MATCH-RESULTS with character C."
-  (let ((also-match-candidates '()) (also-match-positions '())
-        (candidates (car match-results))
-        (match-positions (cdr match-results))
-        (index 0))
-    (while (< index (length candidates))
-      (let* ((cand (nth index candidates)) (cur-pos (nth index match-positions))
-             (pos (if cur-pos (1+ cur-pos) 1)) (new-pos (company-fuzzy--string-match-p c cand pos)))
-        (when (and (numberp new-pos) (<= pos new-pos))
-          (push cand also-match-candidates)
-          (push new-pos also-match-positions)))
-      (setq index (1+ index)))
-    (cons also-match-candidates also-match-positions)))
-
-(defun company-fuzzy--match-string (backend str)
-  "Fuzzy match the candidates with string STR and current BACKEND."
-  (unless (string-empty-p str)
-    (let* ((splitted-c (remove "" (split-string str "")))
-           (first-char (nth 0 splitted-c))
-           (result-candidates (company-fuzzy--match-char backend first-char))
-           (break-it (not result-candidates))
-           ;; Record all match position for all candidates, for ordering issue.
-           (match-positions '())
-           (index 1))
-      (while (and (not break-it) (< index (length splitted-c)))
-        (let* ((c (nth index splitted-c))
-               (match-results
-                (company-fuzzy--match-char-exists-candidates (cons result-candidates
-                                                                   match-positions)
-                                                             c)))
-          (setq result-candidates (car match-results))
-          (setq match-positions (cdr match-results)))
-        (if (= (length result-candidates) 0)
-            (setq break-it t)
-          (setq index (1+ index))))
-      result-candidates)))
-
-;;; Sorting / Scoring
+;;
+;; (@* "Sorting / Scoring" )
+;;
 
 (defun company-fuzzy--sort-by-length (candidates)
   "Sort CANDIDATES by length."
@@ -374,7 +327,7 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
         (check-match-str company-fuzzy--prefix))
     (while (and (= (length prefix-matches) 0) (not (= (length check-match-str) 1)))
       (dolist (cand candidates)
-        (when (company-fuzzy--string-match-p check-match-str cand)
+        (when (string-prefix-p check-match-str cand)
           (push cand prefix-matches)
           (setq candidates (remove cand candidates))))
       (setq check-match-str (substring check-match-str 0 (1- (length check-match-str)))))
@@ -384,26 +337,25 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 
 (defun company-fuzzy--sort-candidates (candidates)
   "Sort all CANDIDATES base on type of sorting backend."
-  (if company-fuzzy--no-valid-prefix-p
-      ;; TODO: The `candidates' does not match the output from
-      ;; `company-fuzzy-all-candidates' function. Hence we intercept
-      ;; all the candidates over here by setting it directly to
-      ;; `company-fuzzy--all-candidates'.
-      (setq candidates company-fuzzy--all-candidates)
+  (setq candidates (company-fuzzy--alist-all-candidates))  ; Get all candidates here.
+  (unless company-fuzzy--no-valid-prefix-p
     (cl-case company-fuzzy-sorting-backend
       (none candidates)
       (alphabetic (setq candidates (sort candidates #'string-lessp)))
       (flx
        (require 'flx)
-       (let ((scoring-table (make-hash-table)) (scoring-keys '()))
+       (let ((scoring-table (make-hash-table)) (scoring-keys '())
+             (plst-data (company-fuzzy--alist-map)))
          (dolist (cand candidates)
-           (let* ((scoring (flx-score cand company-fuzzy--prefix))
-                  (score (if scoring (nth 0 scoring) 0)))
-             (when scoring
-               ;; For first time access score with hash-table.
-               (unless (gethash score scoring-table) (setf (gethash score scoring-table) '()))
-               ;; Push the candidate with the target score to hash-table.
-               (push cand (gethash score scoring-table)))))
+           (let* ((backend (plist-get plst-data cand))
+                  (prefix (company-fuzzy--match-backend-prefix backend)))
+             (let* ((scoring (flx-score cand prefix))
+                    (score (if scoring (nth 0 scoring) 0)))
+               (when scoring
+                 ;; For first time access score with hash-table.
+                 (unless (gethash score scoring-table) (setf (gethash score scoring-table) '()))
+                 ;; Push the candidate with the target score to hash-table.
+                 (push cand (gethash score scoring-table))))))
          ;; Get all keys, and turn into a list.
          (maphash (lambda (score-key _cand-lst) (push score-key scoring-keys)) scoring-table)
          (setq scoring-keys (sort scoring-keys #'>))  ; Sort keys in order.
@@ -420,65 +372,123 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
       (setq candidates (funcall company-fuzzy-sorting-function candidates))))
   candidates)
 
-;;; Core
+;;
+;; (@* "Prefix" )
+;;
 
-(defun company-fuzzy--filter-first-match-char (candidates)
-  "Filter CANDIDATES first matching character."
-  (let* ((result '())
-         (first-char (or (ignore-errors (substring company-fuzzy--prefix 0 1)) ""))
-         first-char-cand)
-    (dolist (cand candidates)
-      (setq first-char-cand (or (ignore-errors (substring cand 0 1)) ""))
-      (when (string= first-char first-char-cand)
-        (push cand result)))
-    result))
+(defun company-fuzzy--complete-backend-prefix (backend)
+  "Return prefix for each BACKEND while doing completion."
+  (cl-case backend
+    (company-files (company-files 'prefix))
+    (t (company-fuzzy--match-backend-prefix backend))))
 
-(defun company-fuzzy--found-candidates (all-candidates temp-candidates backend)
-  "Do stuff after we found TEMP-CANDIDATES.
-Apply and return ALL-CANDIDATES.  BACKEND is used for identify valid candidates."
-  (when (company-fuzzy--valid-candidates-p temp-candidates)
-    (setq all-candidates (append all-candidates temp-candidates))
-    (progn  ; Record all candidates by backend as an id.
-      (push backend company-fuzzy--valid-backends)
-      (push (copy-sequence temp-candidates) company-fuzzy--valid-candidates)))
-  all-candidates)
+(defun company-fuzzy--match-backend-prefix (backend)
+  "Return prefix for each BACKEND while matching candidates."
+  (cl-case backend
+    (company-capf (thing-at-point 'symbol))
+    (company-files
+     (let ((prefix (company-files 'prefix)))
+       (when prefix
+         (let* ((splitted (split-string prefix "/" t))
+                (len-splitted (length splitted))
+                (last (nth (1- len-splitted) splitted)))
+           last))))
+    (t company-fuzzy--prefix)))
+
+(defun company-fuzzy--get-backend-prefix (backend)
+  "Return prefix for each BACKEND while getting candidates."
+  (cl-case backend
+    (company-files
+     (let ((prefix (company-files 'prefix)))
+       (when prefix
+         (let* ((splitted (split-string prefix "/" t))
+                (len-splitted (length splitted))
+                (last (nth (1- len-splitted) splitted))
+                (new-prefix prefix))
+           (when (< 1 len-splitted)
+             (setq new-prefix
+                   (substring prefix 0 (- (length prefix) (length last)))))
+           new-prefix))))
+    (company-yasnippet "")
+    (t (ignore-errors (substring company-fuzzy--prefix 0 1)))))
+
+;;
+;; (@* "Fuzzy Matching" )
+;;
+
+(defun company-fuzzy--trim-trailing-re (regex)
+  "Trim incomplete REGEX.
+If REGEX ends with \\|, trim it, since then it matches an empty string."
+  (if (string-match "\\`\\(.*\\)[\\]|\\'" regex) (match-string 1 regex) regex))
+
+(defun company-fuzzy--regex-fuzzy (str)
+  "Build a regex sequence from STR.
+Insert .* between each char."
+  (setq str (company-fuzzy--trim-trailing-re str))
+  (if (string-match "\\`\\(\\^?\\)\\(.*?\\)\\(\\$?\\)\\'" str)
+      (concat (match-string 1 str)
+              (let ((lst (string-to-list (match-string 2 str))))
+                (apply #'concat
+                       (cl-mapcar
+                        #'concat
+                        (cons "" (cdr (mapcar (lambda (c) (format "[^%c\n]*" c))
+                                              lst)))
+                        (mapcar (lambda (x) (format "\\(%s\\)" (regexp-quote (char-to-string x))))
+                                lst))))
+              (match-string 3 str))
+    str))
+
+(defun company-fuzzy--match-string (prefix candidates)
+  "Return new CANDIDATES that match PREFIX."
+  (when (stringp prefix)
+    (let ((new-cands '()) (fuz-str (company-fuzzy--regex-fuzzy prefix)))
+      (dolist (cand candidates)
+        (when (string-match-p fuz-str cand)
+          (push cand new-cands)))
+      new-cands)))
+
+;;
+;; (@* "Core" )
+;;
+
+(defun company-fuzzy--alist-all-candidates ()
+  "Return all candidates from a list."
+  (let ((all-candidates '()) cands)
+    (dolist (backend-data company-fuzzy--alist-backends-candidates)
+      (setq cands (cdr backend-data) all-candidates (append all-candidates cands)))
+    (delete-dups all-candidates)))
+
+(defun company-fuzzy--alist-map ()
+  "Map `company-fuzzy--alist-backends-candidates'; and return property list \
+of (candidate . backend) data with no duplication."
+  (let ((plst '()) backend cands)
+    (dolist (backend-data company-fuzzy--alist-backends-candidates)
+      (setq backend (car backend-data) cands (cdr backend-data))
+      (dolist (cand cands) (setq plst (plist-put plst cand backend))))
+    plst))
 
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
-  (setq company-fuzzy--valid-backends '()  ; Clean up.
-        company-fuzzy--valid-candidates '()
+  (setq company-fuzzy--alist-backends-candidates '()  ; Clean up.
         company-fuzzy--no-valid-prefix-p (company-fuzzy--trigger-prefix-p))
-  (let ((all-candidates '()) temp-candidates)
-    ;; Normal
+  (let (temp-candidates backend-prefix match-prefix)
     (dolist (backend company-fuzzy--backends)
-      ;; NOTE: For normal backends, you can call the same as No Prefix backends.
-      ;; But everything is quite slow; hence we use the `company-fuzzy--match-string'
-      ;; function to limit the overall matching candidates.
-      (setq temp-candidates
-            (if company-fuzzy--no-valid-prefix-p
-                (company-fuzzy--call-backend backend 'candidates company-fuzzy--prefix)
-              (company-fuzzy--match-string backend company-fuzzy--prefix)))
-      (setq all-candidates (company-fuzzy--found-candidates
-                            all-candidates temp-candidates backend)))
-    ;; Full Input
-    (dolist (backend company-fuzzy--used-full-input-backends)
-      (setq temp-candidates (company-fuzzy--call-backend backend 'candidates company-fuzzy--prefix))
-      (setq all-candidates (company-fuzzy--found-candidates
-                            all-candidates temp-candidates backend)))
-    ;; No Prefix
-    (dolist (backend company-fuzzy--used-no-prefix-backends)
-      (setq temp-candidates (company-fuzzy--call-backend backend 'candidates ""))
-      (setq temp-candidates (company-fuzzy--filter-first-match-char temp-candidates))
-      (setq all-candidates (company-fuzzy--found-candidates
-                            all-candidates temp-candidates backend)))
-    (setq all-candidates (delete-dups all-candidates)
-          company-fuzzy--all-candidates all-candidates)
-    all-candidates))
+      (setq backend-prefix (company-fuzzy--get-backend-prefix backend)
+            match-prefix (company-fuzzy--match-backend-prefix backend)
+            temp-candidates (company-fuzzy--call-backend backend 'candidates backend-prefix))
+      (unless company-fuzzy--no-valid-prefix-p
+        (setq temp-candidates (company-fuzzy--match-string match-prefix temp-candidates)))
+      (when (company-fuzzy--valid-candidates-p temp-candidates)
+        (delete-dups temp-candidates)
+        (push (cons backend (copy-sequence temp-candidates))
+              company-fuzzy--alist-backends-candidates)))
+    (setq company-fuzzy--alist-backends-candidates (reverse company-fuzzy--alist-backends-candidates))
+    nil))
 
 (defun company-fuzzy--get-prefix ()
   "Set the prefix just right before completion."
   (setq company-fuzzy--no-valid-prefix-p nil
-        company-fuzzy--prefix (or (ignore-errors (company-fuzzy--symbol-prefix))
+        company-fuzzy--prefix (or (ignore-errors (company-fuzzy--generic-prefix))
                                   (ffap-file-at-point))))
 
 (defun company-fuzzy-all-other-backends (command &optional arg &rest ignored)
@@ -490,8 +500,6 @@ Apply and return ALL-CANDIDATES.  BACKEND is used for identify valid candidates.
     (annotation (company-fuzzy--extract-annotation arg))
     (candidates (company-fuzzy-all-candidates))
     (doc-buffer (company-fuzzy--doc-as-buffer arg))))
-
-(declare-function flx-score "ext:flx.el")
 
 (provide 'company-fuzzy)
 ;;; company-fuzzy.el ends here
