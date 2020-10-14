@@ -300,17 +300,6 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
     (apply fnc args)))
 
 ;;
-;; (@* "Completion" )
-;;
-
-(defun company-fuzzy--insert-candidate (candidate)
-  "Insertion for CANDIDATE."
-  ;; NOTE: Here we force to change `company-prefix' so the completion
-  ;; will do what we expected.
-  (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
-    (setq company-prefix (company-fuzzy--backend-prefix-complete backend))))
-
-;;
 ;; (@* "Sorting / Scoring" )
 ;;
 
@@ -345,14 +334,14 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
              (plst-data (company-fuzzy--alist-map)))
          (dolist (cand candidates)
            (let* ((backend (plist-get plst-data cand))
-                  (prefix (company-fuzzy--backend-prefix-match backend)))
-             (let* ((scoring (flx-score cand prefix))
-                    (score (if scoring (nth 0 scoring) 0)))
-               (when scoring
-                 ;; For first time access score with hash-table.
-                 (unless (gethash score scoring-table) (setf (gethash score scoring-table) '()))
-                 ;; Push the candidate with the target score to hash-table.
-                 (push cand (gethash score scoring-table))))))
+                  (prefix (company-fuzzy--backend-prefix-match backend))
+                  (scoring (flx-score cand prefix))
+                  (score (if scoring (nth 0 scoring) 0)))
+             (when scoring
+               ;; For first time access score with hash-table.
+               (unless (gethash score scoring-table) (setf (gethash score scoring-table) '()))
+               ;; Push the candidate with the target score to hash-table.
+               (push cand (gethash score scoring-table)))))
          ;; Get all keys, and turn into a list.
          (maphash (lambda (score-key _cand-lst) (push score-key scoring-keys)) scoring-table)
          (setq scoring-keys (sort scoring-keys #'>))  ; Sort keys in order.
@@ -370,20 +359,46 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
   candidates)
 
 ;;
+;; (@* "Completion" )
+;;
+
+(defun company-fuzzy--insert-candidate (candidate)
+  "Insertion for CANDIDATE."
+  ;; NOTE: Here we force to change `company-prefix' so the completion
+  ;; will do what we expected.
+  (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
+    (setq company-prefix (company-fuzzy--backend-prefix-complete backend))))
+
+;;
 ;; (@* "Prefix" )
 ;;
 
 (defun company-fuzzy--backend-prefix-complete (backend)
-  "Return prefix for each BACKEND while doing completion."
+  "Return prefix for each BACKEND while doing completion.
+
+This function is use when function `company-fuzzy--insert-candidate' is
+called.  It returns the current selection prefix to prevent completion
+completes in an odd way."
   (cl-case backend
     (company-files (company-files 'prefix))
     (t (company-fuzzy--backend-prefix-match backend))))
 
 (defun company-fuzzy--backend-prefix-match (backend)
-  "Return prefix for each BACKEND while matching candidates."
+  "Return prefix for each BACKEND while matching candidates.
+
+This function is use for scoring and matching algorithm.  It returns a prefix
+that best describe the current possible candidate.
+
+For instance, if there is a candidate function `buffer-file-name' and with
+current prefix `bfn'.  It will just return `bfn' because the current prefix
+does best describe the for this candidate."
   (cl-case backend
     (company-capf (thing-at-point 'symbol))
     (company-files
+     ;; NOTE: For `company-files', we will return the last section of the path
+     ;; for the best match.
+     ;;
+     ;; Example, if I have path `/path/to/dir'; then it shall return `dir'.
      (let ((prefix (company-files 'prefix)))
        (when prefix
          (let* ((splitted (split-string prefix "/" t))
@@ -393,7 +408,17 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
     (t company-fuzzy--prefix)))
 
 (defun company-fuzzy--backend-prefix-get (backend)
-  "Return prefix for each BACKEND while getting candidates."
+  "Return prefix for each BACKEND while getting candidates.
+
+This function is use for simplify prefix, in order to get as much candidates
+as possible for fuzzy work.
+
+For instance, if I have prefix `bfn'; then most BACKEND will not return
+function `buffer-file-name' as candidate.  But with this function will use a
+letter `b' instead of full prefix `bfn'.  So the BACKEND will return something
+that may be relavent to the first character `b'.
+
+P.S. Not all backend work this way."
   (cl-case backend
     (company-files
      (let ((prefix (company-files 'prefix)))
@@ -437,12 +462,11 @@ Insert .* between each char."
 
 (defun company-fuzzy--match-string (prefix candidates)
   "Return new CANDIDATES that match PREFIX."
-  (when (stringp prefix)
-    (let ((new-cands '()) (fuz-str (company-fuzzy--regex-fuzzy prefix)))
-      (dolist (cand candidates)
-        (when (string-match-p fuz-str cand)
-          (push cand new-cands)))
-      new-cands)))
+  (let ((new-cands '()) (fuz-str (company-fuzzy--regex-fuzzy prefix)))
+    (dolist (cand candidates)
+      (when (string-match-p fuz-str cand)
+        (push cand new-cands)))
+    new-cands))
 
 ;;
 ;; (@* "Core" )
@@ -474,6 +498,11 @@ of (candidate . backend) data with no duplication."
             prefix-com (company-fuzzy--backend-prefix-complete backend))
       (when prefix-get
         (setq temp-candidates (company-fuzzy--call-backend backend 'candidates prefix-get))
+        ;; NOTE: Do the very basic filtering for speed up.
+        ;;
+        ;; The function `company-fuzzy--match-string' does the very first
+        ;; basic filtering in order to lower the performance before sending
+        ;; to function `flx-score'.
         (when (and (not company-fuzzy--no-valid-prefix-p) prefix-com)
           (setq temp-candidates (company-fuzzy--match-string prefix-com temp-candidates))))
       ;; --- History work. ---------------------------------
