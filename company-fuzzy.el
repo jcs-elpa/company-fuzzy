@@ -191,6 +191,12 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
   (or (ignore-errors (string-match-p regexp string start))
       (ignore-errors (string-match-p (regexp-quote regexp) string start))))
 
+(defun company-fuzzy--string-match (regexp string &optional start)
+  "Safe way to execute function `string-match-p'.
+See function `string-match-p' for arguments REGEXP, STRING and START."
+  (or (ignore-errors (string-match regexp string start))
+      (ignore-errors (string-match (regexp-quote regexp) string start))))
+
 (defun company-fuzzy--is-contain-list-string (in-list in-str)
   "Check if a string IN-STR contain in any string in the string list IN-LIST."
   (cl-some #'(lambda (lb-sub-str) (string= lb-sub-str in-str)) in-list))
@@ -441,13 +447,13 @@ P.S. Not all backend work this way."
 (defun company-fuzzy--trim-trailing-re (regex)
   "Trim incomplete REGEX.
 If REGEX ends with \\|, trim it, since then it matches an empty string."
-  (if (string-match "\\`\\(.*\\)[\\]|\\'" regex) (match-string 1 regex) regex))
+  (if (company-fuzzy--string-match "\\`\\(.*\\)[\\]|\\'" regex) (match-string 1 regex) regex))
 
 (defun company-fuzzy--regex-fuzzy (str)
   "Build a regex sequence from STR.
 Insert .* between each char."
   (setq str (company-fuzzy--trim-trailing-re str))
-  (if (string-match "\\`\\(\\^?\\)\\(.*?\\)\\(\\$?\\)\\'" str)
+  (if (company-fuzzy--string-match "\\`\\(\\^?\\)\\(.*?\\)\\(\\$?\\)\\'" str)
       (concat (match-string 1 str)
               (let ((lst (string-to-list (match-string 2 str))))
                 (apply #'concat
@@ -462,11 +468,12 @@ Insert .* between each char."
 
 (defun company-fuzzy--match-string (prefix candidates)
   "Return new CANDIDATES that match PREFIX."
-  (let ((new-cands '()) (fuz-str (company-fuzzy--regex-fuzzy prefix)))
-    (dolist (cand candidates)
-      (when (string-match-p fuz-str cand)
-        (push cand new-cands)))
-    new-cands))
+  (when (stringp prefix)
+    (let ((new-cands '()) (fuz-str (company-fuzzy--regex-fuzzy prefix)))
+      (dolist (cand candidates)
+        (when (company-fuzzy--string-match-p fuz-str cand)
+          (push cand new-cands)))
+      new-cands)))
 
 ;;
 ;; (@* "Core" )
@@ -497,14 +504,16 @@ of (candidate . backend) data with no duplication."
       (setq prefix-get (company-fuzzy--backend-prefix-get backend)
             prefix-com (company-fuzzy--backend-prefix-complete backend))
       (when prefix-get
-        (setq temp-candidates (company-fuzzy--call-backend backend 'candidates prefix-get))
-        ;; NOTE: Do the very basic filtering for speed up.
-        ;;
-        ;; The function `company-fuzzy--match-string' does the very first
-        ;; basic filtering in order to lower the performance before sending
-        ;; to function `flx-score'.
-        (when (and (not company-fuzzy--no-valid-prefix-p) prefix-com)
-          (setq temp-candidates (company-fuzzy--match-string prefix-com temp-candidates))))
+        (setq temp-candidates (company-fuzzy--call-backend backend 'candidates prefix-get)))
+      ;; NOTE: Do the very basic filtering for speed up.
+      ;;
+      ;; The function `company-fuzzy--match-string' does the very first
+      ;; basic filtering in order to lower the performance before sending
+      ;; to function `flx-score'.
+      (when (and (not company-fuzzy--no-valid-prefix-p)
+                 (company-fuzzy--valid-candidates-p temp-candidates)
+                 prefix-com)
+        (setq temp-candidates (company-fuzzy--match-string prefix-com temp-candidates)))
       ;; NOTE: History work.
       ;;
       ;; Here we check if BACKEND a history type of backend. And if it does; then
