@@ -312,10 +312,6 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 ;; (@* "Sorting / Scoring" )
 ;;
 
-(defun company-fuzzy--sort-by-length (candidates)
-  "Sort CANDIDATES by length."
-  (sort candidates (lambda (str1 str2) (< (length str1) (length str2)))))
-
 (defun company-fuzzy--sort-prefix-on-top (candidates)
   "Sort CANDIDATES that match prefix on top of all other selection."
   (let ((prefix-matches '())
@@ -355,11 +351,11 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
              (push cand (gethash score scoring-table))))
          ;; Get all keys, and turn into a list.
          (maphash (lambda (score-key _cand-lst) (push score-key scoring-keys)) scoring-table)
-         (setq scoring-keys (sort scoring-keys #'>))  ; Sort keys in order.
-         (setq candidates '())  ; Clean up, and ready for final output.
+         (setq scoring-keys (sort scoring-keys #'>)  ; Sort keys in order.
+               candidates '())  ; Clean up, and ready for final output.
          (dolist (key scoring-keys)
            (let ((cands (gethash key scoring-table)))
-             (setq cands (company-fuzzy--sort-by-length cands))  ; sort by length once.
+             (setq cands (reverse cands))  ; Respect to backend order.
              (when (functionp company-fuzzy-sorting-score-function)
                (setq cands (funcall company-fuzzy-sorting-score-function cands)))
              (setq candidates (append candidates cands)))))))
