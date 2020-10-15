@@ -375,10 +375,11 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 
 (defun company-fuzzy--insert-candidate (candidate)
   "Insertion for CANDIDATE."
-  ;; NOTE: Here we force to change `company-prefix' so the completion
-  ;; will do what we expected.
-  (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
-    (setq company-prefix (company-fuzzy--backend-prefix-complete backend))))
+  (when company-fuzzy-mode
+    ;; NOTE: Here we force to change `company-prefix' so the completion
+    ;; will do what we expected.
+    (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
+      (setq company-prefix (company-fuzzy--backend-prefix-complete backend)))))
 
 ;;
 ;; (@* "Prefix" )
@@ -416,6 +417,7 @@ does best describe the for this candidate."
                 (len-splitted (length splitted))
                 (last (nth (1- len-splitted) splitted)))
            last))))
+    (company-yasnippet (thing-at-point 'symbol))
     (t company-fuzzy--prefix)))
 
 (defun company-fuzzy--backend-prefix-get (backend)
