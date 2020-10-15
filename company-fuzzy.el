@@ -185,17 +185,17 @@
   (company-fuzzy--is-contain-list-string company-fuzzy-trigger-symbols
                                          company-fuzzy--prefix))
 
+(defun company-fuzzy--string-match (regexp string &optional start)
+  "Safe way to execute function `string-match'.
+See function `string-match' for arguments REGEXP, STRING and START."
+  (or (ignore-errors (string-match regexp string start))
+      (ignore-errors (string-match (regexp-quote regexp) string start))))
+
 (defun company-fuzzy--string-match-p (regexp string &optional start)
   "Safe way to execute function `string-match-p'.
 See function `string-match-p' for arguments REGEXP, STRING and START."
   (or (ignore-errors (string-match-p regexp string start))
       (ignore-errors (string-match-p (regexp-quote regexp) string start))))
-
-(defun company-fuzzy--string-match (regexp string &optional start)
-  "Safe way to execute function `string-match-p'.
-See function `string-match-p' for arguments REGEXP, STRING and START."
-  (or (ignore-errors (string-match regexp string start))
-      (ignore-errors (string-match (regexp-quote regexp) string start))))
 
 (defun company-fuzzy--is-contain-list-string (in-list in-str)
   "Check if a string IN-STR contain in any string in the string list IN-LIST."
