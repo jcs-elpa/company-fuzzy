@@ -111,6 +111,9 @@
 (defvar-local company-fuzzy--plist-history '()
   "Store list data of history data '(backend . candidates)'.")
 
+(defvar-local company-fuzzy--alist-map-data nil
+  "Store data property list data from function `company-fuzzy--alist-map'.")
+
 ;;
 ;; (@* "External" )
 ;;
@@ -316,20 +319,21 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 (defun company-fuzzy--sort-prefix-on-top (candidates)
   "Sort CANDIDATES that match prefix on top of all other selection."
   (let ((prefix-matches '())
-        (check-match-str company-fuzzy--prefix))
-    (while (and (= (length prefix-matches) 0) (not (= (length check-match-str) 1)))
-      (dolist (cand candidates)
-        (when (string-prefix-p check-match-str cand)
-          (push cand prefix-matches)
-          (setq candidates (remove cand candidates))))
-      (setq check-match-str (substring check-match-str 0 (1- (length check-match-str)))))
+        (plst-data (company-fuzzy--alist-map)) backend prefix)
+    (dolist (cand candidates)
+      (setq backend (plist-get plst-data cand)
+            prefix (company-fuzzy--backend-prefix-match backend))
+      (when (ignore-errors (string-prefix-p prefix cand))
+        (push cand prefix-matches)
+        (setq candidates (remove cand candidates))))
     (setq prefix-matches (sort prefix-matches #'string-lessp))
     (setq candidates (append prefix-matches candidates)))
   candidates)
 
 (defun company-fuzzy--sort-candidates (candidates)
   "Sort all CANDIDATES base on type of sorting backend."
-  (setq candidates (company-fuzzy--alist-all-candidates))  ; Get all candidates here.
+  (setq candidates (company-fuzzy--alist-all-candidates)  ; Get all candidates here.
+        company-fuzzy--alist-map-data nil)
   (unless company-fuzzy--no-valid-prefix-p
     (cl-case company-fuzzy-sorting-backend
       (none candidates)
@@ -337,17 +341,18 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
       (flx
        (require 'flx)
        (let ((scoring-table (make-hash-table)) (scoring-keys '())
-             (plst-data (company-fuzzy--alist-map)))
+             (plst-data (company-fuzzy--alist-map))
+             backend prefix scoring score)
          (dolist (cand candidates)
-           (let* ((backend (plist-get plst-data cand))
-                  (prefix (company-fuzzy--backend-prefix-match backend))
-                  (scoring (flx-score cand prefix))
-                  (score (if scoring (nth 0 scoring) 0)))
-             (when scoring
-               ;; For first time access score with hash-table.
-               (unless (gethash score scoring-table) (setf (gethash score scoring-table) '()))
-               ;; Push the candidate with the target score to hash-table.
-               (push cand (gethash score scoring-table)))))
+           (setq backend (plist-get plst-data cand)
+                 prefix (company-fuzzy--backend-prefix-match backend)
+                 scoring (flx-score cand prefix)
+                 score (if scoring (nth 0 scoring) 0))
+           (when scoring
+             ;; For first time access score with hash-table.
+             (unless (gethash score scoring-table) (setf (gethash score scoring-table) '()))
+             ;; Push the candidate with the target score to hash-table.
+             (push cand (gethash score scoring-table))))
          ;; Get all keys, and turn into a list.
          (maphash (lambda (score-key _cand-lst) (push score-key scoring-keys)) scoring-table)
          (setq scoring-keys (sort scoring-keys #'>))  ; Sort keys in order.
@@ -489,11 +494,13 @@ Insert .* between each char."
 (defun company-fuzzy--alist-map ()
   "Map `company-fuzzy--alist-backends-candidates'; and return property list \
 of (candidate . backend) data with no duplication."
-  (let ((plst '()) backend cands)
-    (dolist (backend-data company-fuzzy--alist-backends-candidates)
-      (setq backend (car backend-data) cands (cdr backend-data))
-      (dolist (cand cands) (setq plst (plist-put plst cand backend))))
-    plst))
+  (unless company-fuzzy--alist-map-data
+    (let ((plst '()) backend cands)
+      (dolist (backend-data company-fuzzy--alist-backends-candidates)
+        (setq backend (car backend-data) cands (cdr backend-data))
+        (dolist (cand cands) (setq plst (plist-put plst cand backend))))
+      (setq company-fuzzy--alist-map-data plst))
+    company-fuzzy--alist-map-data))
 
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
