@@ -231,20 +231,7 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 
 (defun company-fuzzy--get-backend-by-candidate (candidate)
   "Return the backend symbol by using CANDIDATE as search index."
-  (let ((index 0) break-it result-backend)
-    (while (and (not break-it) (< index (length company-fuzzy--alist-backends-candidates)))
-      (let* ((backend-data (nth index company-fuzzy--alist-backends-candidates))
-             (backend (car backend-data))
-             (candidates (cdr backend-data)))
-        (when (company-fuzzy--is-contain-list-string candidates candidate)
-          (setq result-backend backend)
-          (setq break-it t)))
-      (setq index (1+ index)))
-    result-backend))
-
-(defun company-fuzzy--get-backend (cand)
-  "Get backend by CAND."
-  (plist-get (company-fuzzy--alist-map) cand))
+  (plist-get (company-fuzzy--alist-map) candidate))
 
 ;;
 ;; (@* "Documentation" )
@@ -457,7 +444,7 @@ P.S. Not all backend work this way."
 
 (defun company-fuzzy--backend-prefix-candidate (cand type)
   "Get the backend prefix by CAND and TYPE."
-  (let ((backend (company-fuzzy--get-backend cand)))
+  (let ((backend (company-fuzzy--get-backend-by-candidate cand)))
     (cl-case type
       (complete (company-fuzzy--backend-prefix-complete backend))
       (match (company-fuzzy--backend-prefix-match backend))
@@ -517,8 +504,8 @@ of (candidate . backend) data with no duplication."
       (dolist (backend-data company-fuzzy--alist-backends-candidates)
         (setq backend (car backend-data) cands (cdr backend-data))
         (dolist (cand cands) (setq plst (plist-put plst cand backend))))
-      (setq company-fuzzy--alist-map-data plst))
-    company-fuzzy--alist-map-data))
+      (setq company-fuzzy--alist-map-data plst)))
+  company-fuzzy--alist-map-data)
 
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
