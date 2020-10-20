@@ -242,6 +242,10 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
       (setq index (1+ index)))
     result-backend))
 
+(defun company-fuzzy--get-backend (cand)
+  "Get backend by CAND."
+  (plist-get (company-fuzzy--alist-map) cand))
+
 ;;
 ;; (@* "Documentation" )
 ;;
@@ -292,9 +296,7 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
   "Prerender color with STR and flag ANNOTATION-P."
   (unless annotation-p
     (let* ((str-len (length str))
-           (plst-data (company-fuzzy--alist-map))
-           (backend (plist-get plst-data str))
-           (prefix (company-fuzzy--backend-prefix-match backend))
+           (prefix (company-fuzzy--backend-prefix-candidate str 'match))
            (cur-selection (nth company-selection company-candidates))
            (splitted-section (remove "" (split-string str " ")))
            (process-selection (nth 0 splitted-section))
@@ -321,11 +323,9 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 
 (defun company-fuzzy--sort-prefix-on-top (candidates)
   "Sort CANDIDATES that match prefix on top of all other selection."
-  (let ((prefix-matches '())
-        (plst-data (company-fuzzy--alist-map)) backend prefix)
+  (let ((prefix-matches '()) prefix)
     (dolist (cand candidates)
-      (setq backend (plist-get plst-data cand)
-            prefix (company-fuzzy--backend-prefix-match backend))
+      (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match))
       (when (ignore-errors (string-prefix-p prefix cand))
         (push cand prefix-matches)
         (setq candidates (remove cand candidates))))
@@ -344,11 +344,9 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
       (flx
        (require 'flx)
        (let ((scoring-table (make-hash-table)) (scoring-keys '())
-             (plst-data (company-fuzzy--alist-map))
-             backend prefix scoring score)
+             prefix scoring score)
          (dolist (cand candidates)
-           (setq backend (plist-get plst-data cand)
-                 prefix (company-fuzzy--backend-prefix-match backend)
+           (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match)
                  scoring (flx-score cand prefix)
                  score (if scoring (nth 0 scoring) 0))
            (when scoring
@@ -382,7 +380,7 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
     ;; NOTE: Here we force to change `company-prefix' so the completion
     ;; will do what we expected.
     (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
-      (setq company-prefix (company-fuzzy--backend-prefix-complete backend)))))
+      (setq company-prefix (company-fuzzy--backend-prefix backend 'complete)))))
 
 ;;
 ;; (@* "Prefix" )
@@ -396,7 +394,7 @@ called.  It returns the current selection prefix to prevent completion
 completes in an odd way."
   (cl-case backend
     (company-files (company-files 'prefix))
-    (t (company-fuzzy--backend-prefix-match backend))))
+    (t (company-fuzzy--backend-prefix backend 'match))))
 
 (defun company-fuzzy--backend-prefix-match (backend)
   "Return prefix for each BACKEND while matching candidates.
@@ -449,6 +447,21 @@ P.S. Not all backend work this way."
            new-prefix))))
     (company-yasnippet "")
     (t (ignore-errors (substring company-fuzzy--prefix 0 1)))))
+
+(defun company-fuzzy--backend-prefix (backend type)
+  "Get the BACKEND prefix by TYPE."
+  (cl-case type
+    (complete (company-fuzzy--backend-prefix-complete backend))
+    (match (company-fuzzy--backend-prefix-match backend))
+    (get (company-fuzzy--backend-prefix-get backend))))
+
+(defun company-fuzzy--backend-prefix-candidate (cand type)
+  "Get the backend prefix by CAND and TYPE."
+  (let ((backend (company-fuzzy--get-backend cand)))
+    (cl-case type
+      (complete (company-fuzzy--backend-prefix-complete backend))
+      (match (company-fuzzy--backend-prefix-match backend))
+      (get (company-fuzzy--backend-prefix-get backend)))))
 
 ;;
 ;; (@* "Fuzzy Matching" )
@@ -513,8 +526,8 @@ of (candidate . backend) data with no duplication."
         company-fuzzy--no-valid-prefix-p (company-fuzzy--trigger-prefix-p))
   (let (temp-candidates prefix-get prefix-com)
     (dolist (backend company-fuzzy--backends)
-      (setq prefix-get (company-fuzzy--backend-prefix-get backend)
-            prefix-com (company-fuzzy--backend-prefix-complete backend))
+      (setq prefix-get (company-fuzzy--backend-prefix backend 'get)
+            prefix-com (company-fuzzy--backend-prefix backend 'complete))
       (when prefix-get
         (setq temp-candidates (company-fuzzy--call-backend backend 'candidates prefix-get)))
       ;; NOTE: Do the very basic filtering for speed up.
