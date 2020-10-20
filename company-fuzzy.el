@@ -203,6 +203,11 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
   (or (ignore-errors (string-match-p regexp string start))
       (ignore-errors (string-match-p (regexp-quote regexp) string start))))
 
+(defun company-fuzzy--string-prefix-p (prefix string &optional ignore-case)
+  "Safe way to execute function `string-prefix-p'.
+See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
+  (ignore-errors (string-prefix-p prefix string ignore-case)))
+
 (defun company-fuzzy--is-contain-list-string (in-list in-str)
   "Check if a string IN-STR contain in any string in the string list IN-LIST."
   (cl-some #'(lambda (lb-sub-str) (string= lb-sub-str in-str)) in-list))
@@ -218,7 +223,7 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
       (if (listp backend)
           (let ((index 0))
             (dolist (back backend)
-              (when (company-fuzzy--string-match-p "company-" (symbol-name back))
+              (when (company-fuzzy--string-prefix-p "company-" (symbol-name back))
                 (push (nth index backend) result-lst))
               (setq index (1+ index))))
         (push backend result-lst)))
@@ -313,7 +318,7 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
   (let ((prefix-matches '()) prefix)
     (dolist (cand candidates)
       (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match))
-      (when (ignore-errors (string-prefix-p prefix cand))
+      (when (company-fuzzy--string-prefix-p prefix cand)
         (push cand prefix-matches)
         (setq candidates (remove cand candidates))))
     (setq prefix-matches (sort prefix-matches #'string-lessp))
