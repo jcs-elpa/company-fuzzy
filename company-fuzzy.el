@@ -93,6 +93,11 @@
   :type 'string
   :group 'company-fuzzy)
 
+(defface company-fuzzy-annotation-face
+  '((t (:inherit company-tooltip-annotation)))
+  "Face for annotation."
+  :group 'company-fuzzy)
+
 (defvar-local company-fuzzy--prefix ""
   "Record down the company current search reg/characters.")
 
@@ -131,7 +136,6 @@
     (setq company-fuzzy--backends (company-fuzzy--normalize-backend-list company-fuzzy--recorded-backends))
     (setq-local company-backends '(company-fuzzy-all-other-backends))
     (setq-local company-transformers (append company-transformers '(company-fuzzy--sort-candidates)))
-    (advice-add 'company-fill-propertize :around #'company-fuzzy--company-fill-propertize)
     (advice-add 'company--insert-candidate :before #'company-fuzzy--insert-candidate)))
 
 (defun company-fuzzy--disable ()
@@ -141,7 +145,6 @@
     (setq company-fuzzy--recorded-backends nil)
     (setq company-fuzzy--backends nil)
     (setq-local company-transformers (delq 'company-fuzzy--sort-candidates company-transformers))
-    (advice-remove 'company-fill-propertize #'company-fuzzy--company-fill-propertize)
     (advice-remove 'company--insert-candidate #'company-fuzzy--insert-candidate)))
 
 ;;;###autoload
@@ -263,7 +266,9 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
   (if (and company-fuzzy-show-annotation candidate)
       (let ((backend-str (company-fuzzy--get-backend-string backend)))
         (when (string-empty-p backend-str) (setq backend-str "unknown"))
-        (format company-fuzzy-annotation-format backend-str))
+        (propertize
+         (format company-fuzzy-annotation-format backend-str)
+         'face 'company-fuzzy-annotation-face))
     ""))
 
 (defun company-fuzzy--source-anno-string (candidate backend)
@@ -283,30 +288,32 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 ;; (@* "Highlighting" )
 ;;
 
-(defun company-fuzzy--company-fill-propertize (fnc &rest args)
-  "Highlight the matching characters with original function FNC, and rest ARGS."
-  (if company-fuzzy-mode
-      (let* ((line (apply fnc args))
-             (cur-selection (nth company-selection company-candidates))
-             (splitted-section (remove "" (split-string line " ")))
-             (process-selection (nth 0 splitted-section))
-             (selected (string= cur-selection process-selection))
-             (selected-face (if selected
-                                'company-tooltip-common-selection
-                              'company-tooltip-common))
-             (selected-common-face (if selected
-                                       'company-tooltip-selection
-                                     'company-tooltip))
-             (splitted-c (remove "" (split-string company-fuzzy--prefix "")))
-             (right-pt (+ (length process-selection) company-tooltip-margin)))
-        (font-lock-prepend-text-property 0 right-pt 'face selected-common-face line)
-        (dolist (c splitted-c)
-          (let ((pos (company-fuzzy--string-match-p (regexp-quote c) line)))
-            (while (and (numberp pos) (< pos right-pt))
-              (font-lock-prepend-text-property pos (1+ pos) 'face selected-face line)
-              (setq pos (company-fuzzy--string-match-p (regexp-quote c) line (1+ pos))))))
-        line)
-    (apply fnc args)))
+(defun company-fuzzy--pre-render (str &optional annotation-p)
+  "Prerender color with STR and flag ANNOTATION-P."
+  (unless annotation-p
+    (let* ((str-len (length str))
+           (plst-data (company-fuzzy--alist-map))
+           (backend (plist-get plst-data str))
+           (prefix (company-fuzzy--backend-prefix-match backend))
+           (cur-selection (nth company-selection company-candidates))
+           (splitted-section (remove "" (split-string str " ")))
+           (process-selection (nth 0 splitted-section))
+           (selected (string= cur-selection process-selection))
+           (selected-face (if selected
+                              'company-tooltip-common-selection
+                            'company-tooltip-common))
+           (selected-common-face (if selected
+                                     'company-tooltip-selection
+                                   'company-tooltip))
+           (splitted-c (remove "" (split-string prefix ""))))
+      (set-text-properties 0 str-len nil str)
+      (font-lock-prepend-text-property 0 str-len 'face selected-common-face str)
+      (dolist (c splitted-c)
+        (let ((pos (company-fuzzy--string-match-p (regexp-quote c) str)))
+          (while (and (numberp pos) (< pos str-len))
+            (font-lock-prepend-text-property pos (1+ pos) 'face selected-face str)
+            (setq pos (company-fuzzy--string-match-p (regexp-quote c) str (1+ pos))))))))
+  str)
 
 ;;
 ;; (@* "Sorting / Scoring" )
@@ -557,7 +564,8 @@ of (candidate . backend) data with no duplication."
     (prefix (company-fuzzy--get-prefix))
     (annotation (company-fuzzy--extract-annotation arg))
     (candidates (company-fuzzy-all-candidates))
-    (doc-buffer (company-fuzzy--doc-as-buffer arg))))
+    (doc-buffer (company-fuzzy--doc-as-buffer arg))
+    (pre-render (company-fuzzy--pre-render arg (nth 0 ignored)))))
 
 (provide 'company-fuzzy)
 ;;; company-fuzzy.el ends here
