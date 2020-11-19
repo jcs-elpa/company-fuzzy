@@ -519,7 +519,8 @@ of (candidate . backend) data with no duplication."
   (let (temp-candidates prefix-get prefix-com)
     (dolist (backend company-fuzzy--backends)
       (setq prefix-get (company-fuzzy--backend-prefix backend 'get)
-            prefix-com (company-fuzzy--backend-prefix backend 'complete))
+            prefix-com (company-fuzzy--backend-prefix backend 'complete)
+            temp-candidates nil)
       (when prefix-get
         (setq temp-candidates (company-fuzzy--call-backend backend 'candidates prefix-get)))
       ;; NOTE: Do the very basic filtering for speed up.
