@@ -516,11 +516,10 @@ of (candidate . backend) data with no duplication."
   "Return the list of all candidates."
   (setq company-fuzzy--alist-backends-candidates '()  ; Clean up.
         company-fuzzy--no-valid-prefix-p (company-fuzzy--trigger-prefix-p))
-  (let (temp-candidates prefix-get prefix-com)
-    (dolist (backend company-fuzzy--backends)
-      (setq prefix-get (company-fuzzy--backend-prefix backend 'get)
-            prefix-com (company-fuzzy--backend-prefix backend 'complete)
-            temp-candidates nil)
+  (dolist (backend company-fuzzy--backends)
+    (let ((prefix-get (company-fuzzy--backend-prefix backend 'get))
+          (prefix-com (company-fuzzy--backend-prefix backend 'complete))
+          temp-candidates)
       (when prefix-get
         (setq temp-candidates (company-fuzzy--call-backend backend 'candidates prefix-get)))
       ;; NOTE: Do the very basic filtering for speed up.
