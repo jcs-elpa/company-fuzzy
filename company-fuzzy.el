@@ -210,11 +210,11 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
 
 (defun company-fuzzy--is-contain-list-string (in-list in-str)
   "Check if a string IN-STR contain in any string in the string list IN-LIST."
-  (cl-some #'(lambda (lb-sub-str) (string= lb-sub-str in-str)) in-list))
+  (cl-some (lambda (lb-sub-str) (string= lb-sub-str in-str)) in-list))
 
 (defun company-fuzzy--is-contain-list-symbol (in-list in-symbol)
   "Check if a symbol IN-SYMBOL contain in any symbol in the symbol list IN-LIST."
-  (cl-some #'(lambda (lb-sub-symbol) (equal lb-sub-symbol in-symbol)) in-list))
+  (cl-some (lambda (lb-sub-symbol) (equal lb-sub-symbol in-symbol)) in-list))
 
 (defun company-fuzzy--normalize-backend-list (backends)
   "Normalize all BACKENDS as list."
