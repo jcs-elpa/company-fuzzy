@@ -111,14 +111,13 @@
 (defvar-local company-fuzzy--is-trigger-prefix-p nil
   "Flag to see if currently completion having a valid prefix.")
 
-(defvar-local company-fuzzy--alist-backends-candidates nil
-  "Store list data of '(backend . candidates)'.")
+(defvar-local company-fuzzy--ht-backends-candidates nil
+  "Store candidates by backend as id.")
+
+;; ---
 
 (defvar-local company-fuzzy--plist-history '()
   "Store list data of history data '(backend . candidates)'.")
-
-(defvar-local company-fuzzy--alist-map-data nil
-  "Store data property list data from function `company-fuzzy--alist-map'.")
 
 ;;
 ;; (@* "External" )
@@ -237,7 +236,10 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
 
 (defun company-fuzzy--get-backend-by-candidate (candidate)
   "Return the backend symbol by using CANDIDATE as search index."
-  (plist-get (company-fuzzy--alist-map) candidate))
+  (let ((match (ht-find (lambda (_backend cands)
+                          (company-fuzzy--is-contain-list-string cands candidate))
+                        company-fuzzy--ht-backends-candidates)))
+    (car match)))
 
 ;;
 ;; (@* "Documentation" )
@@ -328,8 +330,7 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
 
 (defun company-fuzzy--sort-candidates (candidates)
   "Sort all CANDIDATES base on type of sorting backend."
-  (setq candidates (company-fuzzy--alist-all-candidates)  ; Get all candidates here.
-        company-fuzzy--alist-map-data nil)
+  (setq candidates (company-fuzzy--ht-all-candidates))  ; Get all candidates here.
   (unless company-fuzzy--is-trigger-prefix-p
     (cl-case company-fuzzy-sorting-backend
       (none candidates)
@@ -492,28 +493,18 @@ Insert .* between each char."
 ;; (@* "Core" )
 ;;
 
-(defun company-fuzzy--alist-all-candidates ()
-  "Return all candidates from a list."
-  (let ((all-candidates '()) cands)
-    (dolist (backend-data company-fuzzy--alist-backends-candidates)
-      (setq cands (reverse (cdr backend-data))
-            all-candidates (append all-candidates cands)))
+(defun company-fuzzy--ht-all-candidates ()
+  "Return all candidates from the data."
+  (let ((all-candidates '()))
+    (maphash
+     (lambda (_backend cands)
+       (setq all-candidates (append all-candidates cands)))
+     company-fuzzy--ht-backends-candidates)
     (reverse (delete-dups all-candidates))))
-
-(defun company-fuzzy--alist-map ()
-  "Map `company-fuzzy--alist-backends-candidates'; and return property list \
-of (candidate . backend) data with no duplication."
-  (unless company-fuzzy--alist-map-data
-    (let ((plst '()) backend cands)
-      (dolist (backend-data company-fuzzy--alist-backends-candidates)
-        (setq backend (car backend-data) cands (cdr backend-data))
-        (dolist (cand cands) (setq plst (plist-put plst cand backend))))
-      (setq company-fuzzy--alist-map-data plst)))
-  company-fuzzy--alist-map-data)
 
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
-  (setq company-fuzzy--alist-backends-candidates '()  ; Clean up.
+  (setq company-fuzzy--ht-backends-candidates (ht-create)  ; Clean up.
         company-fuzzy--is-trigger-prefix-p (company-fuzzy--trigger-prefix-p))
   (dolist (backend company-fuzzy--backends)
     (let ((prefix-get (company-fuzzy--backend-prefix backend 'get))
@@ -543,15 +534,13 @@ of (candidate . backend) data with no duplication."
       ;; NOTE: Made the final completion.
       ;;
       ;; This is the final ensure step before processing it to scoring phase.
-      ;; We confirm candidates by adding it to `company-fuzzy--alist-backends-candidates'.
+      ;; We confirm candidates by adding it to `company-fuzzy--ht-backends-candidates'.
       ;; The function `company-fuzzy--valid-candidates-p' is use to ensure the
       ;; candidates returns a list of strings, which this is the current only valid
       ;; type to this package.
       (when (company-fuzzy--valid-candidates-p temp-candidates)
         (delete-dups temp-candidates)
-        (push (cons backend (copy-sequence temp-candidates))
-              company-fuzzy--alist-backends-candidates)))
-    (setq company-fuzzy--alist-backends-candidates (reverse company-fuzzy--alist-backends-candidates))
+        (ht-set company-fuzzy--ht-backends-candidates backend (copy-sequence temp-candidates))))
     nil))
 
 (defun company-fuzzy--get-prefix ()
