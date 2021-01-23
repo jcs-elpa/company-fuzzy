@@ -111,7 +111,7 @@
 (defvar-local company-fuzzy--is-trigger-prefix-p nil
   "Flag to see if currently completion having a valid prefix.")
 
-(defvar-local company-fuzzy--ht-backends-candidates nil
+(defvar-local company-fuzzy--ht-backends-candidates (ht-create)
   "Store candidates by backend as id.")
 
 (defvar-local company-fuzzy--ht-history (ht-create)
