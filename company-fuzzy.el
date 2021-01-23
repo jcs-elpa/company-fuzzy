@@ -7,7 +7,7 @@
 ;; Description: Fuzzy matching for `company-mode'.
 ;; Keyword: auto auto-complete complete fuzzy matching
 ;; Version: 1.0.1
-;; Package-Requires: ((emacs "24.4") (company "0.8.12") (s "1.12.0"))
+;; Package-Requires: ((emacs "24.4") (company "0.8.12") (s "1.12.0") (ht "2.0"))
 ;; URL: https://github.com/jcs-elpa/company-fuzzy
 
 ;; This file is NOT part of GNU Emacs.
@@ -37,6 +37,7 @@
 (require 'ffap)
 (require 's)
 (require 'subr-x)
+(require 'ht)
 
 (defgroup company-fuzzy nil
   "Fuzzy matching for `company-mode'."
@@ -107,7 +108,7 @@
 (defvar-local company-fuzzy--recorded-backends nil
   "Record down company local backends in current buffer.")
 
-(defvar-local company-fuzzy--no-valid-prefix-p nil
+(defvar-local company-fuzzy--is-trigger-prefix-p nil
   "Flag to see if currently completion having a valid prefix.")
 
 (defvar-local company-fuzzy--alist-backends-candidates nil
@@ -329,29 +330,26 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
   "Sort all CANDIDATES base on type of sorting backend."
   (setq candidates (company-fuzzy--alist-all-candidates)  ; Get all candidates here.
         company-fuzzy--alist-map-data nil)
-  (unless company-fuzzy--no-valid-prefix-p
+  (unless company-fuzzy--is-trigger-prefix-p
     (cl-case company-fuzzy-sorting-backend
       (none candidates)
       (alphabetic (setq candidates (sort candidates #'string-lessp)))
       (flx
        (require 'flx)
-       (let ((scoring-table (make-hash-table)) (scoring-keys '())
+       (let ((scoring-table (ht-create)) (scoring-keys '())
              prefix scoring score)
          (dolist (cand candidates)
            (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match)
                  scoring (flx-score cand prefix)
                  score (if scoring (nth 0 scoring) 0))
            (when scoring
-             ;; For first time access score with hash-table.
-             (unless (gethash score scoring-table) (setf (gethash score scoring-table) '()))
-             ;; Push the candidate with the target score to hash-table.
-             (push cand (gethash score scoring-table))))
+             (ht-set scoring-table score (push cand (ht-get scoring-table score)))))
          ;; Get all keys, and turn into a list.
          (maphash (lambda (score-key _cand-lst) (push score-key scoring-keys)) scoring-table)
          (setq scoring-keys (sort scoring-keys #'>)  ; Sort keys in order.
                candidates '())  ; Clean up, and ready for final output.
          (dolist (key scoring-keys)
-           (let ((cands (gethash key scoring-table)))
+           (let ((cands (ht-get scoring-table key)))
              (setq cands (reverse cands))  ; Respect to backend order.
              (when (functionp company-fuzzy-sorting-score-function)
                (setq cands (funcall company-fuzzy-sorting-score-function cands)))
@@ -498,8 +496,9 @@ Insert .* between each char."
   "Return all candidates from a list."
   (let ((all-candidates '()) cands)
     (dolist (backend-data company-fuzzy--alist-backends-candidates)
-      (setq cands (cdr backend-data) all-candidates (append all-candidates cands)))
-    (delete-dups all-candidates)))
+      (setq cands (reverse (cdr backend-data))
+            all-candidates (append all-candidates cands)))
+    (reverse (delete-dups all-candidates))))
 
 (defun company-fuzzy--alist-map ()
   "Map `company-fuzzy--alist-backends-candidates'; and return property list \
@@ -515,7 +514,7 @@ of (candidate . backend) data with no duplication."
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
   (setq company-fuzzy--alist-backends-candidates '()  ; Clean up.
-        company-fuzzy--no-valid-prefix-p (company-fuzzy--trigger-prefix-p))
+        company-fuzzy--is-trigger-prefix-p (company-fuzzy--trigger-prefix-p))
   (dolist (backend company-fuzzy--backends)
     (let ((prefix-get (company-fuzzy--backend-prefix backend 'get))
           (prefix-com (company-fuzzy--backend-prefix backend 'complete))
@@ -527,7 +526,7 @@ of (candidate . backend) data with no duplication."
       ;; The function `company-fuzzy--match-string' does the very first
       ;; basic filtering in order to lower the performance before sending
       ;; to function `flx-score'.
-      (when (and (not company-fuzzy--no-valid-prefix-p)
+      (when (and (not company-fuzzy--is-trigger-prefix-p)
                  (company-fuzzy--valid-candidates-p temp-candidates)
                  prefix-com)
         (setq temp-candidates (company-fuzzy--match-string prefix-com temp-candidates)))
@@ -557,7 +556,7 @@ of (candidate . backend) data with no duplication."
 
 (defun company-fuzzy--get-prefix ()
   "Set the prefix just right before completion."
-  (setq company-fuzzy--no-valid-prefix-p nil
+  (setq company-fuzzy--is-trigger-prefix-p nil
         company-fuzzy--prefix (or (ignore-errors (company-fuzzy--generic-prefix))
                                   (ffap-file-at-point))))
 
