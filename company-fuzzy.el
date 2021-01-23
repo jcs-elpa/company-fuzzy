@@ -114,9 +114,7 @@
 (defvar-local company-fuzzy--ht-backends-candidates nil
   "Store candidates by backend as id.")
 
-;; ---
-
-(defvar-local company-fuzzy--plist-history '()
+(defvar-local company-fuzzy--ht-history (ht-create)
   "Store list data of history data '(backend . candidates)'.")
 
 ;;
@@ -291,7 +289,8 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
   "Prerender color with STR and flag ANNOTATION-P."
   (unless annotation-p
     (let* ((str-len (length str))
-           (prefix (company-fuzzy--backend-prefix-candidate str 'match))
+           (prefix (or (company-fuzzy--backend-prefix-candidate str 'match)
+                       ""))
            (cur-selection (nth company-selection company-candidates))
            (splitted-section (remove "" (split-string str " ")))
            (process-selection (nth 0 splitted-section))
@@ -346,7 +345,7 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
            (when scoring
              (ht-set scoring-table score (push cand (ht-get scoring-table score)))))
          ;; Get all keys, and turn into a list.
-         (maphash (lambda (score-key _cand-lst) (push score-key scoring-keys)) scoring-table)
+         (maphash (lambda (score-key _cands) (push score-key scoring-keys)) scoring-table)
          (setq scoring-keys (sort scoring-keys #'>)  ; Sort keys in order.
                candidates '())  ; Clean up, and ready for final output.
          (dolist (key scoring-keys)
@@ -496,11 +495,10 @@ Insert .* between each char."
 (defun company-fuzzy--ht-all-candidates ()
   "Return all candidates from the data."
   (let ((all-candidates '()))
-    (maphash
-     (lambda (_backend cands)
-       (setq all-candidates (append all-candidates cands)))
-     company-fuzzy--ht-backends-candidates)
-    (reverse (delete-dups all-candidates))))
+    (maphash (lambda (_backend cands)
+               (setq all-candidates (append all-candidates cands)))
+             company-fuzzy--ht-backends-candidates)
+    (delete-dups all-candidates)))
 
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
@@ -526,11 +524,10 @@ Insert .* between each char."
       ;; Here we check if BACKEND a history type of backend. And if it does; then
       ;; it will ensure considering the history candidates to the new candidates.
       (when (company-fuzzy--is-contain-list-symbol company-fuzzy-history-backends backend)
-        (let ((cands-history (plist-get company-fuzzy--plist-history backend)))
+        (let ((cands-history (ht-get company-fuzzy--ht-history backend)))
           (setq temp-candidates (append cands-history temp-candidates))
           (delete-dups temp-candidates)
-          (setq company-fuzzy--plist-history
-                (plist-put company-fuzzy--plist-history backend temp-candidates))))
+          (ht-set company-fuzzy--ht-history backend temp-candidates)))
       ;; NOTE: Made the final completion.
       ;;
       ;; This is the final ensure step before processing it to scoring phase.
