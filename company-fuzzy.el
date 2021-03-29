@@ -228,10 +228,6 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
     (setq result-lst (reverse result-lst))
     (cl-remove-duplicates result-lst)))
 
-(defun company-fuzzy--call-backend (backend command key)
-  "Safely call BACKEND by COMMAND and KEY."
-  (ignore-errors (funcall backend command key)))
-
 (defun company-fuzzy--get-backend-by-candidate (candidate)
   "Return the backend symbol by using CANDIDATE as search index."
   (let ((match (ht-find (lambda (_backend cands)
@@ -239,16 +235,15 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
                         company-fuzzy--ht-backends-candidates)))
     (car match)))
 
-;;
-;; (@* "Documentation" )
-;;
+(defun company-fuzzy--call-backend (backend command key)
+  "Safely call BACKEND by COMMAND and KEY."
+  (ignore-errors (funcall backend command key)))
 
-(defun company-fuzzy--doc-as-buffer (candidate)
-  "Provide doc by CANDIDATE."
+(defun company-fuzzy--backend-command (candidate command)
+  "Find the backend from the CANDIDATE then call the COMMAND."
   (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
-    (if (or (string-empty-p candidate) (not backend))
-        nil
-      (company-fuzzy--call-backend backend 'doc-buffer candidate))))
+    (if (or (string-empty-p candidate) (not backend)) nil
+      (company-fuzzy--call-backend backend command candidate))))
 
 ;;
 ;; (@* "Annotation" )
@@ -554,8 +549,8 @@ Insert .* between each char."
     (prefix (company-fuzzy--get-prefix))
     (annotation (company-fuzzy--extract-annotation arg))
     (candidates (company-fuzzy-all-candidates))
-    (doc-buffer (company-fuzzy--doc-as-buffer arg))
-    (pre-render (company-fuzzy--pre-render arg (nth 0 ignored)))))
+    (pre-render (company-fuzzy--pre-render arg (nth 0 ignored)))
+    (t (ignore-errors (company-fuzzy--backend-command arg command)))))
 
 (provide 'company-fuzzy)
 ;;; company-fuzzy.el ends here
