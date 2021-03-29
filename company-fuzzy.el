@@ -186,8 +186,8 @@
 
 (defun company-fuzzy--trigger-prefix-p ()
   "Check if current prefix a trigger prefix."
-  (company-fuzzy--is-contain-list-string company-fuzzy-trigger-symbols
-                                         company-fuzzy--prefix))
+  (company-fuzzy--contain-list-string company-fuzzy-trigger-symbols
+                                      company-fuzzy--prefix))
 
 (defun company-fuzzy--string-match (regexp string &optional start)
   "Safe way to execute function `string-match'.
@@ -206,13 +206,15 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
   (ignore-errors (string-prefix-p prefix string ignore-case)))
 
-(defun company-fuzzy--is-contain-list-string (in-list in-str)
-  "Check if a string IN-STR contain in any string in the string list IN-LIST."
-  (cl-some (lambda (lb-sub-str) (string= lb-sub-str in-str)) in-list))
+(defun company-fuzzy--contain-list-string (in-list in-str)
+  "Return non-nil if IN-STR is listed in IN-LIST.
 
-(defun company-fuzzy--is-contain-list-symbol (in-list in-symbol)
-  "Check if a symbol IN-SYMBOL contain in any symbol in the symbol list IN-LIST."
-  (cl-some (lambda (lb-sub-symbol) (equal lb-sub-symbol in-symbol)) in-list))
+The reverse mean the check from regular expression is swapped."
+  (cl-some (lambda (elm) (string= elm in-str)) in-list))
+
+(defun company-fuzzy--contain-list-symbol (in-list in-symbol)
+  "Return non-nil if IN-SYMBOL is listed in IN-LIST."
+  (cl-some (lambda (elm) (equal elm in-symbol)) in-list))
 
 (defun company-fuzzy--normalize-backend-list (backends)
   "Normalize all BACKENDS as list."
@@ -231,7 +233,7 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
 (defun company-fuzzy--get-backend-by-candidate (candidate)
   "Return the backend symbol by using CANDIDATE as search index."
   (let ((match (ht-find (lambda (_backend cands)
-                          (company-fuzzy--is-contain-list-string cands candidate))
+                          (company-fuzzy--contain-list-string cands candidate))
                         company-fuzzy--ht-backends-candidates)))
     (car match)))
 
@@ -518,7 +520,7 @@ Insert .* between each char."
       ;;
       ;; Here we check if BACKEND a history type of backend. And if it does; then
       ;; it will ensure considering the history candidates to the new candidates.
-      (when (company-fuzzy--is-contain-list-symbol company-fuzzy-history-backends backend)
+      (when (company-fuzzy--contain-list-symbol company-fuzzy-history-backends backend)
         (let ((cands-history (ht-get company-fuzzy--ht-history backend)))
           (setq temp-candidates (append cands-history temp-candidates))
           (delete-dups temp-candidates)
