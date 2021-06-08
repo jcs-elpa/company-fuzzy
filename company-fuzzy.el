@@ -50,7 +50,8 @@
   :type '(choice (const :tag "none" none)
                  (const :tag "alphabetic" alphabetic)
                  (const :tag "flx" flx)
-                 (const :tag "flex" flex))
+                 (const :tag "flex" flex)
+                 (const :tag "liquidmetal" liquidmetal))
   :group 'company-fuzzy)
 
 (defcustom company-fuzzy-prefix-on-top t
@@ -124,6 +125,7 @@
 
 (declare-function flx-score "ext:flx.el")
 (declare-function flex-score "ext:flex.el")
+(declare-function liquidmetal-score "ext:liquidmetal.el")
 
 ;;
 ;; (@* "Mode" )
@@ -328,13 +330,14 @@ The reverse mean the check from regular expression is swapped."
 
 (defun company-fuzzy--sort-candidates-by-function (candidates fnc)
   "Sort CANDIDATES with function call FNC."
-  (let ((scoring-table (ht-create)) (scoring-keys '())
-        prefix scoring score)
+  (let ((scoring-table (ht-create)) (scoring-keys '()) prefix scoring score)
     (dolist (cand candidates)
       (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match)
             scoring (funcall fnc cand prefix)
-            score (if (listp scoring) (nth 0 scoring) 0))
-      (when scoring
+            score (cond ((listp scoring) (nth 0 scoring))
+                        ((numberp scoring) scoring)
+                        (t 0)))
+      (when score
         (ht-set scoring-table score (push cand (ht-get scoring-table score)))))
     ;; Get all keys, and turn into a list.
     (maphash (lambda (score-key _cands) (push score-key scoring-keys)) scoring-table)
@@ -355,12 +358,18 @@ The reverse mean the check from regular expression is swapped."
     (cl-case company-fuzzy-sorting-backend
       (none candidates)
       (alphabetic (setq candidates (sort candidates #'string-lessp)))
-      (flx (require 'flx)
-           (setq candidates
-                 (company-fuzzy--sort-candidates-by-function candidates #'flx-score)))
-      (flex (require 'flex)
-            (setq candidates
-                  (company-fuzzy--sort-candidates-by-function candidates #'flex-score))))
+      (flx
+       (require 'flx)
+       (setq candidates
+             (company-fuzzy--sort-candidates-by-function candidates #'flx-score)))
+      (flex
+       (require 'flex)
+       (setq candidates
+             (company-fuzzy--sort-candidates-by-function candidates #'flex-score)))
+      (liquidmetal
+       (require 'liquidmetal)
+       (setq candidates
+             (company-fuzzy--sort-candidates-by-function candidates #'liquidmetal-score))))
     (when company-fuzzy-prefix-on-top
       (setq candidates (company-fuzzy--sort-prefix-on-top candidates)))
     (when (functionp company-fuzzy-sorting-function)
