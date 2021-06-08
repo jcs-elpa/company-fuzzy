@@ -62,7 +62,7 @@ Currently supports these values,
 * *`alphabetic`* - Sort in the alphabetic order. (VSCode)
 * *`flx`* - Use library [flx](https://github.com/lewang/flx) as matching engine. (Sublime Text)
 * *`flex`* - Use library [flex](https://github.com/jcs-elpa/flex) as matching engine.
-* *`liquidmetal`* - Use [liquidmetal](https://github.com/jcs-elpa/liquidmetal) similar to [Quicksilver](https://qsapp.com/) algorithm. (Quicksilver)
+* *`liquidmetal`* - Use library [liquidmetal](https://github.com/jcs-elpa/liquidmetal) similar to [Quicksilver](https://qsapp.com/) algorithm.
 
 Or implements your sorting algorithm yourself? Assgin the function to
 `company-fuzzy-sorting-function` variable like this.
