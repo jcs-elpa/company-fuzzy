@@ -49,7 +49,8 @@
   "Type for sorting/scoring backend."
   :type '(choice (const :tag "none" none)
                  (const :tag "alphabetic" alphabetic)
-                 (const :tag "flx" flx))
+                 (const :tag "flx" flx)
+                 (const :tag "flex" flex))
   :group 'company-fuzzy)
 
 (defcustom company-fuzzy-prefix-on-top t
@@ -122,6 +123,7 @@
 ;;
 
 (declare-function flx-score "ext:flx.el")
+(declare-function flex-score "ext:flex.el")
 
 ;;
 ;; (@* "Mode" )
@@ -324,6 +326,28 @@ The reverse mean the check from regular expression is swapped."
     (setq candidates (append prefix-matches candidates)))
   candidates)
 
+(defun company-fuzzy--sort-candidates-by-function (candidates fnc)
+  "Sort CANDIDATES with function call FNC."
+  (let ((scoring-table (ht-create)) (scoring-keys '())
+        prefix scoring score)
+    (dolist (cand candidates)
+      (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match)
+            scoring (funcall fnc cand prefix)
+            score (if (listp scoring) (nth 0 scoring) 0))
+      (when scoring
+        (ht-set scoring-table score (push cand (ht-get scoring-table score)))))
+    ;; Get all keys, and turn into a list.
+    (maphash (lambda (score-key _cands) (push score-key scoring-keys)) scoring-table)
+    (setq scoring-keys (sort scoring-keys #'>)  ; Sort keys in order.
+          candidates '())  ; Clean up, and ready for final output.
+    (dolist (key scoring-keys)
+      (let ((cands (ht-get scoring-table key)))
+        (setq cands (reverse cands))  ; Respect to backend order.
+        (when (functionp company-fuzzy-sorting-score-function)
+          (setq cands (funcall company-fuzzy-sorting-score-function cands)))
+        (setq candidates (append candidates cands)))))
+  candidates)
+
 (defun company-fuzzy--sort-candidates (candidates)
   "Sort all CANDIDATES base on type of sorting backend."
   (setq candidates (company-fuzzy--ht-all-candidates))  ; Get all candidates here.
@@ -331,26 +355,12 @@ The reverse mean the check from regular expression is swapped."
     (cl-case company-fuzzy-sorting-backend
       (none candidates)
       (alphabetic (setq candidates (sort candidates #'string-lessp)))
-      (flx
-       (require 'flx)
-       (let ((scoring-table (ht-create)) (scoring-keys '())
-             prefix scoring score)
-         (dolist (cand candidates)
-           (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match)
-                 scoring (flx-score cand prefix)
-                 score (if scoring (nth 0 scoring) 0))
-           (when scoring
-             (ht-set scoring-table score (push cand (ht-get scoring-table score)))))
-         ;; Get all keys, and turn into a list.
-         (maphash (lambda (score-key _cands) (push score-key scoring-keys)) scoring-table)
-         (setq scoring-keys (sort scoring-keys #'>)  ; Sort keys in order.
-               candidates '())  ; Clean up, and ready for final output.
-         (dolist (key scoring-keys)
-           (let ((cands (ht-get scoring-table key)))
-             (setq cands (reverse cands))  ; Respect to backend order.
-             (when (functionp company-fuzzy-sorting-score-function)
-               (setq cands (funcall company-fuzzy-sorting-score-function cands)))
-             (setq candidates (append candidates cands)))))))
+      (flx (require 'flx)
+           (setq candidates
+                 (company-fuzzy--sort-candidates-by-function candidates #'flx-score)))
+      (flex (require 'flex)
+            (setq candidates
+                  (company-fuzzy--sort-candidates-by-function candidates #'flex-score))))
     (when company-fuzzy-prefix-on-top
       (setq candidates (company-fuzzy--sort-prefix-on-top candidates)))
     (when (functionp company-fuzzy-sorting-function)
