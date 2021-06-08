@@ -58,11 +58,11 @@ own backend by customize `company-fuzzy-sorting-backend` variable like this.
 
 Currently supports these values,
 
-* `*none*` - Gives you the raw result.
-* `*alphabetic*` - Sort in the alphabetic order. (VSCode)
-* `*flx*` - Use library [flx](https://github.com/lewang/flx) as matching engine. (Sublime Text)
-* `*flex*` - Use library [flex](https://github.com/jcs-elpa/flex) as matching engine.
-* `*liquidmetal*` - Use [liquidmetal](https://github.com/jcs-elpa/liquidmetal) similar to [Quicksilver](https://qsapp.com/) algorithm. (Quicksilver)
+* *`none`* - Gives you the raw result.
+* *`alphabetic`* - Sort in the alphabetic order. (VSCode)
+* *`flx`* - Use library [flx](https://github.com/lewang/flx) as matching engine. (Sublime Text)
+* *`flex`* - Use library [flex](https://github.com/jcs-elpa/flex) as matching engine.
+* *`liquidmetal`* - Use [liquidmetal](https://github.com/jcs-elpa/liquidmetal) similar to [Quicksilver](https://qsapp.com/) algorithm. (Quicksilver)
 
 Or implements your sorting algorithm yourself? Assgin the function to
 `company-fuzzy-sorting-function` variable like this.
