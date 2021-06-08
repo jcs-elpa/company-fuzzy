@@ -61,6 +61,8 @@ Currently supports these values,
 * *none* - Gives you the raw result.
 * *alphabetic* - Sort in the alphabetic order. (VSCode)
 * *flx* - Sort by [flx](https://github.com/lewang/flx) matching engine. (Sublime Text)
+* *flex* - Sort by [flex](https://github.com/jcs-elpa/flex) matching engine.
+* *liquidmetal* - Sort by [liquidmetal](https://github.com/jcs-elpa/liquidmetal).
 
 Or implements your sorting algorithm yourself? Assgin the function to
 `company-fuzzy-sorting-function` variable like this.
@@ -125,10 +127,10 @@ plugin work smoothly I would recommend these `company`'s variables to be set.
 ```el
 (use-package company
   :init
-  (setq company-require-match nil)            ; Don't require match, so you can still move your cursor as expected.
-  (setq company-tooltip-align-annotations t)  ; Align annotation to the right side.
-  (setq company-eclim-auto-save nil)          ; Stop eclim auto save.
-  (setq company-dabbrev-downcase nil)         ; No downcase when completion.
+  (setq company-require-match nil            ; Don't require match, so you can still move your cursor as expected.
+        company-tooltip-align-annotations t  ; Align annotation to the right side.
+        company-eclim-auto-save nil          ; Stop eclim auto save.
+        company-dabbrev-downcase nil)        ; No downcase when completion.
   :config
   ;; Enable downcase only when completing the completion.
   (defun jcs--company-complete-selection--advice-around (fn)
