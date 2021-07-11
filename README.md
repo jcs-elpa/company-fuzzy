@@ -176,8 +176,8 @@ of your mode hook. You can log out variable `company-fuzzy--backends` and see wh
 backends are currently handled by `company-fuzzy-mode`!
 
 Or, you can hack through by configuring variable `company-fuzzye--backends` directly
-but this is not recommended since when you disable `company-fuzzy-mode` it will
-not restore back to `company-backends`. Unless you change it with variable
+but this is not recommended since after you disable `company-fuzzy-mode` it will
+not be restored back to `company-backends`. Unless you change it with variable
 `company-fuzzy--recorded-backends` simutamiously so it can be restored back to
 your `company-backends`' true form.
 
