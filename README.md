@@ -155,7 +155,6 @@ out all backends and hand it over to `company-fuzzy` to manage it.
 #### :dizzy: When should I call `company-fuzzy`?
 
 You should call `company-fuzzy-mode` after you have done configure variable `company-backends`.
-See following example,
 
 ```el
 (setq company-backends '(company-capf company-yasnippets)  ; configure backends
