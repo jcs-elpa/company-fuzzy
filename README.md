@@ -152,6 +152,11 @@ Try log out the `company-backends` and make sure `company-fuzzy-all-other-backen
 is the only backends in you list. If it's not, enable `company-fuzzy-mode` to swap
 out all backends and hand it over to `company-fuzzy` to manage it.
 
+```el
+(message "%s" company-backends)         ; '(company-fuzzy-all-other-backends)
+(message "%s" company-fuzzy--backends)  ; .. backends has been handed over to `company-fuzzy`
+```
+
 #### :dizzy: When should I call `company-fuzzy-mode`?
 
 You should call `company-fuzzy-mode` after you have done configure variable `company-backends`.
