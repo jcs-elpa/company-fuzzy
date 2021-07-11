@@ -149,10 +149,8 @@ For the full configuration you can check out my configuration
 #### :question: Why is `company-fuzzy` not working?
 
 Try log out the `company-backends` and make sure `company-fuzzy-all-other-backends`
-is the only backends in you list.
-
-If it's not, enable `company-fuzzy-mode` to swap out all backends and hand it over
-to `company-fuzzy` to manage it.
+is the only backends in you list. If it's not, enable `company-fuzzy-mode` to swap
+out all backends and hand it over to `company-fuzzy` to manage it.
 
 #### :question: When should I call `company-fuzzy`?
 
