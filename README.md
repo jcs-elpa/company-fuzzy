@@ -7,7 +7,7 @@
 > Fuzzy matching for `company-mode'.
 
 <p align="center">
-  <img src="./etc/demo.gif"/>
+<img src="./etc/demo.gif"/>
 </p>
 
 Pure `elisp` fuzzy completion for `company-mode`. This plugin search through
@@ -24,11 +24,11 @@ hence all possible candidates will be shown in the auto-complete menu.
 ## Differences from other alternatives
 
 * [company-ycmd](https://github.com/abingham/emacs-ycmd)
-  * Uses [ycmd](https://github.com/Valloric/ycmd) as backend to provide functionalities.
-  * Quite hard to config properly.
+* Uses [ycmd](https://github.com/Valloric/ycmd) as backend to provide functionalities.
+* Quite hard to config properly.
 * [company-flx](https://github.com/PythonNut/company-flx)
-  * Uses library [flx](https://github.com/lewang/flx).
-  * Only works with `elisp-mode` currently.
+* Uses library [flx](https://github.com/lewang/flx).
+* Only works with `elisp-mode` currently.
 
 ## Usage
 
@@ -180,6 +180,21 @@ but this is not recommended since after you disable `company-fuzzy-mode` it will
 not be restored back to `company-backends`. Unless you change it with variable
 `company-fuzzy--recorded-backends` simutamiously so it can be restored back to
 your `company-backends`' true form.
+
+#### :dizzy: Why do some candidates not showing up?
+
+`company-fuzzy` respects backends' rule. Meaning the candidates can be restricted
+by the backend you are using. For example,
+
+```el
+(defvar my-variable)  ; You declare a variable
+
+(my-vari.. )          ; but you are trying to use the variable as a function
+```
+
+The `my-variable` would not show up since backend thinks it should be a function
+and not variable. Another cause would be the candidate has been eliminated by
+the scoring engine (it socres lower than 0), hence it would not be shown.
 
 ## Contribution
 
