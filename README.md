@@ -7,7 +7,7 @@
 > Fuzzy matching for `company-mode'.
 
 <p align="center">
-<img src="./etc/demo.gif"/>
+  <img src="./etc/demo.gif"/>
 </p>
 
 Pure `elisp` fuzzy completion for `company-mode`. This plugin search through
@@ -24,11 +24,11 @@ hence all possible candidates will be shown in the auto-complete menu.
 ## Differences from other alternatives
 
 * [company-ycmd](https://github.com/abingham/emacs-ycmd)
-* Uses [ycmd](https://github.com/Valloric/ycmd) as backend to provide functionalities.
-* Quite hard to config properly.
+  * Uses [ycmd](https://github.com/Valloric/ycmd) as backend to provide functionalities.
+  * Quite hard to config properly.
 * [company-flx](https://github.com/PythonNut/company-flx)
-* Uses library [flx](https://github.com/lewang/flx).
-* Only works with `elisp-mode` currently.
+  * Uses library [flx](https://github.com/lewang/flx).
+  * Only works with `elisp-mode` currently.
 
 ## Usage
 
