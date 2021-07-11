@@ -164,6 +164,12 @@ You should call `company-fuzzy-mode` after you have done configure variable `com
 (company-fuzzy-mode 1)                                     ; enable fuzzy matching at the very last
 ```
 
+#### :dizzy: What if I want to add backends to specific `major-mode`?
+
+You can add any backends as long as you call `company-fuzzy-mode` at the very end
+of your mode hook. You can log out variable `company-fuzzy--backends` and see what
+backends are currently handled by `company-fuzzy-mode`!
+
 ## Contribution
 
 If you would like to contribute to this project, you may either
