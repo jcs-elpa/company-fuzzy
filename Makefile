@@ -23,7 +23,7 @@ unix-compile:
 
 unix-test:
 	@echo "Testing..."
-	$(CASK) exec ert-runner -L . $(LOAD-TEST-FILES) -t '!no-win' -t '!org'
+	$(CASK) exec ert-runner -L . -t '!no-win' -t '!org'
 
 clean:
 	rm -rf .cask *.elc
