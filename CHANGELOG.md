@@ -10,6 +10,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 * Add support for [flex](https://github.com/jcs-elpa/flex).
 * Add support for [liquidmetal](https://github.com/jcs-elpa/liquidmetal).
+* Fix invalid output for command `company-diag`.
 
 ## 1.2.1
 > Released Jab 24, 2021
