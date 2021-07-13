@@ -9,7 +9,7 @@ TEST-FILES := $(shell ls test/company-fuzzy-*.el)
 
 .PHONY: clean checkdoc lint unix-build unix-compile	unix-test
 
-unix-ci: clean unix-build unix-compile unix-test
+unix-ci: clean unix-build unix-compile
 
 unix-build:
 	$(CASK) install
@@ -23,7 +23,7 @@ unix-compile:
 
 unix-test:
 	@echo "Testing..."
-	$(CASK) exec ert-runner -L . -t '!no-win' -t '!org'
+	$(CASK) exec ert-runner -L . $(LOAD-TEST-FILES) -t '!no-win' -t '!org'
 
 clean:
 	rm -rf .cask *.elc
