@@ -9,7 +9,7 @@ TEST-FILES := $(shell ls test/company-fuzzy-*.el)
 
 .PHONY: clean checkdoc lint unix-build unix-compile	unix-test
 
-unix-ci: clean unix-build unix-compile unix-test
+unix-ci: clean unix-build unix-compile
 
 unix-build:
 	$(CASK) install
