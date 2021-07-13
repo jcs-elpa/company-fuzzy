@@ -222,7 +222,7 @@ The reverse mean the check from regular expression is swapped."
 
 (defun company-fuzzy--normalize-backend-list (backends)
   "Normalize all BACKENDS as list."
-  (let ((result-lst '()))
+  (let (result-lst)
     (dolist (backend backends)
       (if (listp backend)
           (let ((index 0))
@@ -318,7 +318,7 @@ The reverse mean the check from regular expression is swapped."
 
 (defun company-fuzzy--sort-prefix-on-top (candidates)
   "Sort CANDIDATES that match prefix on top of all other selection."
-  (let ((prefix-matches '()) prefix)
+  (let (prefix-matches prefix)
     (dolist (cand candidates)
       (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match))
       (when (company-fuzzy--string-prefix-p prefix cand)
@@ -330,7 +330,7 @@ The reverse mean the check from regular expression is swapped."
 
 (defun company-fuzzy--sort-candidates-by-function (candidates fnc)
   "Sort CANDIDATES with function call FNC."
-  (let ((scoring-table (ht-create)) (scoring-keys '()) prefix scoring score)
+  (let ((scoring-table (ht-create)) scoring-keys prefix scoring score)
     (dolist (cand candidates)
       (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match)
             scoring (funcall fnc cand prefix)
@@ -342,7 +342,7 @@ The reverse mean the check from regular expression is swapped."
     ;; Get all keys, and turn into a list.
     (maphash (lambda (score-key _cands) (push score-key scoring-keys)) scoring-table)
     (setq scoring-keys (sort scoring-keys #'>)  ; Sort keys in order.
-          candidates '())  ; Clean up, and ready for final output.
+          candidates nil)  ; Clean up, and ready for final output.
     (dolist (key scoring-keys)
       (let ((cands (ht-get scoring-table key)))
         (setq cands (reverse cands))  ; Respect to backend order.
@@ -353,7 +353,6 @@ The reverse mean the check from regular expression is swapped."
 
 (defun company-fuzzy--sort-candidates (candidates)
   "Sort all CANDIDATES base on type of sorting backend."
-  (setq candidates (company-fuzzy--ht-all-candidates))  ; Get all candidates here.
   (unless company-fuzzy--is-trigger-prefix-p
     (cl-case company-fuzzy-sorting-backend
       (none candidates)
@@ -498,7 +497,7 @@ Insert .* between each char."
 (defun company-fuzzy--match-string (prefix candidates)
   "Return new CANDIDATES that match PREFIX."
   (when (stringp prefix)
-    (let ((new-cands '()) (fuz-str (company-fuzzy--regex-fuzzy prefix)))
+    (let ((fuz-str (company-fuzzy--regex-fuzzy prefix)) new-cands)
       (dolist (cand candidates)
         (when (company-fuzzy--string-match-p fuz-str cand)
           (push cand new-cands)))
@@ -510,7 +509,7 @@ Insert .* between each char."
 
 (defun company-fuzzy--ht-all-candidates ()
   "Return all candidates from the data."
-  (let ((all-candidates '()))
+  (let (all-candidates)
     (maphash (lambda (_backend cands)
                (setq all-candidates (append all-candidates cands)))
              company-fuzzy--ht-backends-candidates)
@@ -553,8 +552,8 @@ Insert .* between each char."
       ;; type to this package.
       (when (company-fuzzy--valid-candidates-p temp-candidates)
         (delete-dups temp-candidates)
-        (ht-set company-fuzzy--ht-backends-candidates backend (copy-sequence temp-candidates))))
-    nil))
+        (ht-set company-fuzzy--ht-backends-candidates backend (copy-sequence temp-candidates)))))
+  (company-fuzzy--ht-all-candidates))
 
 (defun company-fuzzy--get-prefix ()
   "Set the prefix just right before completion."
