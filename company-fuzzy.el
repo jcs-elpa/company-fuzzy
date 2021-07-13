@@ -123,6 +123,8 @@
 ;; (@* "External" )
 ;;
 
+(declare-function company-files "ext:company-files.el")
+
 (declare-function flx-score "ext:flx.el")
 (declare-function flex-score "ext:flex.el")
 (declare-function liquidmetal-score "ext:liquidmetal.el")
