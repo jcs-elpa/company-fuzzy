@@ -551,7 +551,13 @@ Insert .* between each char."
       (when (company-fuzzy--valid-candidates-p temp-candidates)
         (delete-dups temp-candidates)
         (ht-set company-fuzzy--ht-backends-candidates backend (copy-sequence temp-candidates)))))
-  (company-fuzzy--ht-all-candidates))
+  ;; Since we insert the candidates before sorting event, see function
+  ;; `company-fuzzy--sort-candidates', we return to simply avoid the process
+  ;; from `comany-mode'.
+  ;;
+  ;; This should help us save some performance!
+  (when (eq this-command 'company-diag)
+    (company-fuzzy--ht-all-candidates)))
 
 (defun company-fuzzy--get-prefix ()
   "Set the prefix just right before completion."
