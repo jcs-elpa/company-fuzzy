@@ -557,6 +557,8 @@ Insert .* between each char."
   ;;
   ;; This should help us save some performance!
   (when (eq this-command 'company-diag)
+    ;; We did return candidates here, yet this does not mean `company-diag'
+    ;; will respect this result.
     (company-fuzzy--ht-all-candidates)))
 
 (defun company-fuzzy--get-prefix ()
