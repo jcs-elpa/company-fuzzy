@@ -192,8 +192,7 @@
 
 (defun company-fuzzy--trigger-prefix-p ()
   "Check if current prefix a trigger prefix."
-  (company-fuzzy--contain-list-string company-fuzzy-trigger-symbols
-                                      company-fuzzy--prefix))
+  (member company-fuzzy--prefix company-fuzzy-trigger-symbols))
 
 (defun company-fuzzy--string-match (regexp string &optional start)
   "Safe way to execute function `string-match'.
@@ -211,12 +210,6 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
   "Safe way to execute function `string-prefix-p'.
 See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
   (ignore-errors (string-prefix-p prefix string ignore-case)))
-
-(defun company-fuzzy--contain-list-string (in-list in-str)
-  "Return non-nil if IN-STR is listed in IN-LIST.
-
-The reverse mean the check from regular expression is swapped."
-  (cl-some (lambda (elm) (string= elm in-str)) in-list))
 
 (defun company-fuzzy--contain-list-symbol (in-list in-symbol)
   "Return non-nil if IN-SYMBOL is listed in IN-LIST."
@@ -239,7 +232,7 @@ The reverse mean the check from regular expression is swapped."
 (defun company-fuzzy--get-backend-by-candidate (candidate)
   "Return the backend symbol by using CANDIDATE as search index."
   (let ((match (ht-find (lambda (_backend cands)
-                          (company-fuzzy--contain-list-string cands candidate))
+                          (member candidate cands))
                         company-fuzzy--ht-backends-candidates)))
     (car match)))
 
