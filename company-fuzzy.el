@@ -348,6 +348,9 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
 
 (defun company-fuzzy--sort-candidates (candidates)
   "Sort all CANDIDATES base on type of sorting backend."
+  ;; IMPORTANT: Since the command `candidates' will change by `company-mode',
+  ;; we manually set the candidates here so we get can consistent result.
+  (setq candidates (company-fuzzy--ht-all-candidates))
   (unless company-fuzzy--is-trigger-prefix-p
     (cl-case company-fuzzy-sorting-backend
       (none candidates)
