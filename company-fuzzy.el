@@ -81,6 +81,11 @@
   :type 'string
   :group 'company-fuzzy)
 
+(defcustom company-fuzzy-passthrough-backends '()
+  "List of backends that already are fuzzy, so no filtering of candidates is done."
+  :type 'list
+  :group 'company-fuzzy)
+
 (defcustom company-fuzzy-history-backends '(company-yasnippet)
   "List of backends that kept the history to do fuzzy sorting."
   :type 'list
@@ -518,39 +523,9 @@ Insert .* between each char."
   (setq company-fuzzy--ht-backends-candidates (ht-create)  ; Clean up.
         company-fuzzy--is-trigger-prefix-p (company-fuzzy--trigger-prefix-p))
   (dolist (backend company-fuzzy--backends)
-    (let ((prefix-get (company-fuzzy--backend-prefix backend 'get))
-          (prefix-com (company-fuzzy--backend-prefix backend 'complete))
-          temp-candidates)
-      (when prefix-get
-        (setq temp-candidates (company-fuzzy--call-backend backend 'candidates prefix-get)))
-      ;; NOTE: Do the very basic filtering for speed up.
-      ;;
-      ;; The function `company-fuzzy--match-string' does the very first
-      ;; basic filtering in order to lower the performance before sending
-      ;; to function `flx-score'.
-      (when (and (not company-fuzzy--is-trigger-prefix-p)
-                 (company-fuzzy--valid-candidates-p temp-candidates)
-                 prefix-com)
-        (setq temp-candidates (company-fuzzy--match-string prefix-com temp-candidates)))
-      ;; NOTE: History work.
-      ;;
-      ;; Here we check if BACKEND a history type of backend. And if it does; then
-      ;; it will ensure considering the history candidates to the new candidates.
-      (when (company-fuzzy--contain-list-symbol company-fuzzy-history-backends backend)
-        (let ((cands-history (ht-get company-fuzzy--ht-history backend)))
-          (setq temp-candidates (append cands-history temp-candidates))
-          (delete-dups temp-candidates)
-          (ht-set company-fuzzy--ht-history backend temp-candidates)))
-      ;; NOTE: Made the final completion.
-      ;;
-      ;; This is the final ensure step before processing it to scoring phase.
-      ;; We confirm candidates by adding it to `company-fuzzy--ht-backends-candidates'.
-      ;; The function `company-fuzzy--valid-candidates-p' is use to ensure the
-      ;; candidates returns a list of strings, which this is the current only valid
-      ;; type to this package.
-      (when (company-fuzzy--valid-candidates-p temp-candidates)
-        (delete-dups temp-candidates)
-        (ht-set company-fuzzy--ht-backends-candidates backend (copy-sequence temp-candidates)))))
+    (if (company-fuzzy--contain-list-symbol company-fuzzy-passthrough-backends backend)
+        (company-fuzzy--candidates-from-passthrough-backend backend)
+      (company-fuzzy--candidates-from-backend backend)))
   ;; Since we insert the candidates before sorting event, see function
   ;; `company-fuzzy--sort-candidates', we return to simply avoid the process
   ;; from `comany-mode'.
@@ -560,6 +535,52 @@ Insert .* between each char."
     ;; We did return candidates here, yet this does not mean `company-diag'
     ;; will respect this result.
     (company-fuzzy--ht-all-candidates)))
+
+(defun company-fuzzy--candidates-from-passthrough-backend (backend)
+  "Use candidates of already fuzzy backend as is."
+
+  (let (temp-candidates)
+    (when company-fuzzy--prefix
+      (setq temp-candidates (company-fuzzy--call-backend backend 'candidates company-fuzzy--prefix)))
+    (when (company-fuzzy--valid-candidates-p temp-candidates)
+      (delete-dups temp-candidates)
+      (ht-set company-fuzzy--ht-backends-candidates backend (copy-sequence temp-candidates)))))
+
+
+(defun company-fuzzy--candidates-from-backend (backend)
+  (let ((prefix-get (company-fuzzy--backend-prefix backend 'get))
+        (prefix-com (company-fuzzy--backend-prefix backend 'complete))
+        temp-candidates)
+    (when prefix-get
+      (setq temp-candidates (company-fuzzy--call-backend backend 'candidates prefix-get)))
+    ;; NOTE: Do the very basic filtering for speed up.
+    ;;
+    ;; The function `company-fuzzy--match-string' does the very first
+    ;; basic filtering in order to lower the performance before sending
+    ;; to function `flx-score'.
+    (when (and (not company-fuzzy--is-trigger-prefix-p)
+               (company-fuzzy--valid-candidates-p temp-candidates)
+               prefix-com)
+      (setq temp-candidates (company-fuzzy--match-string prefix-com temp-candidates)))
+    ;; NOTE: History work.
+    ;;
+    ;; Here we check if BACKEND a history type of backend. And if it does; then
+    ;; it will ensure considering the history candidates to the new candidates.
+    (when (company-fuzzy--contain-list-symbol company-fuzzy-history-backends backend)
+      (let ((cands-history (ht-get company-fuzzy--ht-history backend)))
+        (setq temp-candidates (append cands-history temp-candidates))
+        (delete-dups temp-candidates)
+        (ht-set company-fuzzy--ht-history backend temp-candidates)))
+    ;; NOTE: Made the final completion.
+    ;;
+    ;; This is the final ensure step before processing it to scoring phase.
+    ;; We confirm candidates by adding it to `company-fuzzy--ht-backends-candidates'.
+    ;; The function `company-fuzzy--valid-candidates-p' is use to ensure the
+    ;; candidates returns a list of strings, which this is the current only valid
+    ;; type to this package.
+    (when (company-fuzzy--valid-candidates-p temp-candidates)
+      (delete-dups temp-candidates)
+      (ht-set company-fuzzy--ht-backends-candidates backend (copy-sequence temp-candidates)))))
 
 (defun company-fuzzy--get-prefix ()
   "Set the prefix just right before completion."
