@@ -216,10 +216,6 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
   (ignore-errors (string-prefix-p prefix string ignore-case)))
 
-(defun company-fuzzy--contain-list-symbol (in-list in-symbol)
-  "Return non-nil if IN-SYMBOL is listed in IN-LIST."
-  (cl-some (lambda (elm) (equal elm in-symbol)) in-list))
-
 (defun company-fuzzy--normalize-backend-list (backends)
   "Normalize all BACKENDS as list."
   (let (result-lst)
@@ -523,7 +519,7 @@ Insert .* between each char."
   (setq company-fuzzy--ht-backends-candidates (ht-create)  ; Clean up.
         company-fuzzy--is-trigger-prefix-p (company-fuzzy--trigger-prefix-p))
   (dolist (backend company-fuzzy--backends)
-    (if (company-fuzzy--contain-list-symbol company-fuzzy-passthrough-backends backend)
+    (if (memq backend company-fuzzy-passthrough-backends)
         (company-fuzzy--candidates-from-passthrough-backend backend)
       (company-fuzzy--candidates-from-backend backend)))
   ;; Since we insert the candidates before sorting event, see function
