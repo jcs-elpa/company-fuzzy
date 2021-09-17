@@ -108,6 +108,10 @@ of the backends from polluting the fuzzy matching.
 (setq company-fuzzy-passthrough-backends '(company-capf))
 ```
 
+*P.S. This is design to use with semantic backends, like [lsp-mode](https://github.com/emacs-lsp/lsp-mode)
+(uses [company-capf](https://github.com/company-mode/company-mode))
+, or [eglot](https://github.com/joaotavora/eglot), etc.*
+
 ## 💬 Details
 
 Since [company](https://github.com/company-mode/company-mode)
