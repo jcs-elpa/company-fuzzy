@@ -524,7 +524,7 @@ Insert .* between each char."
       (company-fuzzy--candidates-from-backend backend)))
   ;; Since we insert the candidates before sorting event, see function
   ;; `company-fuzzy--sort-candidates', we return to simply avoid the process
-  ;; from `comany-mode'.
+  ;; from `company-mode'.
   ;;
   ;; This should help us save some performance!
   (when (eq this-command 'company-diag)
