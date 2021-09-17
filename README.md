@@ -21,7 +21,7 @@ program unless is necessary.
 * *Combined all backends to one backend* - Opposite to [company-try-hard](https://github.com/Wilfred/company-try-hard),
 hence all possible candidates will be shown in the auto-complete menu.
 
-## Differences from other alternatives
+## 🧪 Differences from other alternatives
 
 * [company-ycmd](https://github.com/abingham/emacs-ycmd)
   * Uses [ycmd](https://github.com/Valloric/ycmd) as backend to provide functionalities.
@@ -47,7 +47,7 @@ this plugin will replace all backends to this minor mode
 specific backend (basically take all backends away, so
 this mode could combine all sources and do the fuzzy work).
 
-### Sorting/Scoring backend
+### 🔍 Sorting/Scoring backend
 
 There are multiple sorting algorithms for auto-completion. You can choose your
 own backend by customize `company-fuzzy-sorting-backend` variable like this.
@@ -73,7 +73,7 @@ Or implements your sorting algorithm yourself? Assgin the function to
                                        candidates))  ; Don't forget to return the candidaites!
 ```
 
-### Prefix On Top
+### 🔍 Prefix On Top
 
 If you wish the prefix matchs on top of all other selection, customize
 this variable to `t` like the line below.
@@ -87,7 +87,7 @@ If you set `company-fuzzy-sorting-backend` to `'flx` then
 you probably don't need this to be on because the `flx` scoring engine
 already take care of that!*
 
-### For annotation
+### 🔍 For annotation
 
 You can toggle `company-fuzzy-show-annotation` for showing annotation or not.
 
@@ -99,7 +99,7 @@ You can also customize annotation using `format` variable.
 
 * `company-fuzzy-annotation-format` => ` <%s>`
 
-### Excluding
+### 🔍 Excluding
 
 You can customize variable `company-fuzzy-passthrough-backends` to exclude some
 of the backends from polluting the fuzzy matching.
@@ -115,7 +115,7 @@ granted most control to users, every company backend developer
 has different method of implementing company backend. It is hard
 to manage all backends to one by varies of rules.
 
-### History
+### ✒️ History
 
 Some backends doesn't allow me to get the list of candidates by passing the
 possible prefix; hence I have created this type of special scenario. If you
