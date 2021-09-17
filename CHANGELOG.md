@@ -11,6 +11,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 * Add support for [flex](https://github.com/jcs-elpa/flex).
 * Add support for [liquidmetal](https://github.com/jcs-elpa/liquidmetal).
 * Fix invalid output for command `company-diag`.
+* Introduce new variable `company-fuzzy-passthrough-backends` to filter out already fuzzied candidates.
 
 ## 1.2.1
 > Released Jan 24, 2021
