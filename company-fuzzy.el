@@ -211,10 +211,6 @@ See function `string-match-p' for arguments REGEXP, STRING and START."
 See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
   (ignore-errors (string-prefix-p prefix string ignore-case)))
 
-(defun company-fuzzy--contain-list-symbol (in-list in-symbol)
-  "Return non-nil if IN-SYMBOL is listed in IN-LIST."
-  (cl-some (lambda (elm) (equal elm in-symbol)) in-list))
-
 (defun company-fuzzy--normalize-backend-list (backends)
   "Normalize all BACKENDS as list."
   (let (result-lst)
@@ -536,7 +532,7 @@ Insert .* between each char."
       ;;
       ;; Here we check if BACKEND a history type of backend. And if it does; then
       ;; it will ensure considering the history candidates to the new candidates.
-      (when (company-fuzzy--contain-list-symbol company-fuzzy-history-backends backend)
+      (when (memq backend company-fuzzy-history-backends)
         (let ((cands-history (ht-get company-fuzzy--ht-history backend)))
           (setq temp-candidates (append cands-history temp-candidates))
           (delete-dups temp-candidates)
