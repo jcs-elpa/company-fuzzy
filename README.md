@@ -13,7 +13,7 @@
 Pure `elisp` fuzzy completion for `company-mode`. This plugin search through
 all the buffer local `company-backends` and fuzzy search all candidates.
 
-## Features
+## 🏆 Features
 
 * *Work across all backends* - Any backend that gives list of string should work.
 * *Only uses native `elisp` code* - I personally don't prefer any external
@@ -30,7 +30,7 @@ hence all possible candidates will be shown in the auto-complete menu.
   * Uses library [flx](https://github.com/lewang/flx).
   * Only works with `elisp-mode` currently.
 
-## Usage
+## 🔧 Usage
 
 You can enable it globally by adding this line to your config
 ```el
