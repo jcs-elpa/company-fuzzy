@@ -108,7 +108,7 @@ of the backends from polluting the fuzzy matching.
 (setq company-fuzzy-passthrough-backends '(company-capf))
 ```
 
-## Details
+## 💬 Details
 
 Since [company](https://github.com/company-mode/company-mode)
 granted most control to users, every company backend developer
