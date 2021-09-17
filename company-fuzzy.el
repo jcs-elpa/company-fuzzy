@@ -533,8 +533,7 @@ Insert .* between each char."
     (company-fuzzy--ht-all-candidates)))
 
 (defun company-fuzzy--candidates-from-passthrough-backend (backend)
-  "Use candidates of already fuzzy backend as is."
-
+  "Use candidates of already fuzzy BACKEND as is."
   (let (temp-candidates)
     (when company-fuzzy--prefix
       (setq temp-candidates (company-fuzzy--call-backend backend 'candidates company-fuzzy--prefix)))
@@ -542,8 +541,8 @@ Insert .* between each char."
       (delete-dups temp-candidates)
       (ht-set company-fuzzy--ht-backends-candidates backend (copy-sequence temp-candidates)))))
 
-
 (defun company-fuzzy--candidates-from-backend (backend)
+  "Do fuzzy matching for current BACKEND."
   (let ((prefix-get (company-fuzzy--backend-prefix backend 'get))
         (prefix-com (company-fuzzy--backend-prefix backend 'complete))
         temp-candidates)
@@ -562,7 +561,7 @@ Insert .* between each char."
     ;;
     ;; Here we check if BACKEND a history type of backend. And if it does; then
     ;; it will ensure considering the history candidates to the new candidates.
-    (when (company-fuzzy--contain-list-symbol company-fuzzy-history-backends backend)
+    (when (memq backend company-fuzzy-history-backends)
       (let ((cands-history (ht-get company-fuzzy--ht-history backend)))
         (setq temp-candidates (append cands-history temp-candidates))
         (delete-dups temp-candidates)
