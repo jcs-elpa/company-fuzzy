@@ -99,6 +99,15 @@ You can also customize annotation using `format` variable.
 
 * `company-fuzzy-annotation-format` => ` <%s>`
 
+### Excluding
+
+You can customize variable `company-fuzzy-passthrough-backends` to exclude some
+of the backends from polluting the fuzzy matching.
+
+```el
+(setq company-fuzzy-passthrough-backends '(company-capf))
+```
+
 ## Details
 
 Since [company](https://github.com/company-mode/company-mode)
