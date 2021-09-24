@@ -12,6 +12,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 * Add support for [liquidmetal](https://github.com/jcs-elpa/liquidmetal).
 * Fix invalid output for command `company-diag`.
 * Introduce new variable `company-fuzzy-passthrough-backends` to filter out already fuzzied candidates.
+* Fix error from `company-tng-mode`.
 
 ## 1.2.1
 > Released Jan 24, 2021
