@@ -13,6 +13,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 * Fix invalid output for command `company-diag`.
 * Introduce new variable `company-fuzzy-passthrough-backends` to filter out already fuzzied candidates.
 * Fix error from `company-tng-mode`.
+* Add functionality to adapt all commands from original company backends.
 
 ## 1.2.1
 > Released Jan 24, 2021
