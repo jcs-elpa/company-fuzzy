@@ -593,7 +593,7 @@ Insert .* between each char."
     (annotation (company-fuzzy--extract-annotation arg))
     (candidates (company-fuzzy-all-candidates))
     (pre-render (company-fuzzy--pre-render arg (nth 0 ignored)))
-    ((or doc-buffer kind) (company-fuzzy--backend-command arg command))))
+    (t (company-fuzzy--backend-command arg command))))
 
 (provide 'company-fuzzy)
 ;;; company-fuzzy.el ends here
