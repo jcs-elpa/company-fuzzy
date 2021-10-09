@@ -5,8 +5,13 @@ All notable changes to this project will be documented in this file.
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
 
-## 1.2.2 (Unreleased)
+## 1.2.3 (Unreleased)
 > Released N/A
+
+* N/A
+
+## 1.2.2
+> Released Oct 9, 2021
 
 * Add support for [flex](https://github.com/jcs-elpa/flex).
 * Add support for [liquidmetal](https://github.com/jcs-elpa/liquidmetal).
