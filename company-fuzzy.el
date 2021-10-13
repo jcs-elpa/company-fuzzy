@@ -49,8 +49,10 @@
   "Type for sorting/scoring backend."
   :type '(choice (const :tag "none" none)
                  (const :tag "alphabetic" alphabetic)
-                 (const :tag "flx" flx)
                  (const :tag "flex" flex)
+                 (const :tag "flx" flx)
+                 (const :tag "fuz-skim" fuz-skim)
+                 (const :tag "fuz-clangd" fuz-clangd)
                  (const :tag "liquidmetal" liquidmetal))
   :group 'company-fuzzy)
 
@@ -130,8 +132,10 @@
 
 (declare-function company-files "ext:company-files.el")
 
-(declare-function flx-score "ext:flx.el")
 (declare-function flex-score "ext:flex.el")
+(declare-function flx-score "ext:flx.el")
+(declare-function fuz-calc-score-skim "ext:fuz.el")
+(declare-function fuz-calc-score-clangd "ext:fuz.el")
 (declare-function liquidmetal-score "ext:liquidmetal.el")
 
 ;;
@@ -357,14 +361,23 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
     (cl-case company-fuzzy-sorting-backend
       (none candidates)
       (alphabetic (setq candidates (sort candidates #'string-lessp)))
-      (flx
-       (require 'flx)
-       (setq candidates
-             (company-fuzzy--sort-candidates-by-function candidates #'flx-score)))
       (flex
        (require 'flex)
        (setq candidates
              (company-fuzzy--sort-candidates-by-function candidates #'flex-score)))
+      (flx
+       (require 'flx)
+       (setq candidates
+             (company-fuzzy--sort-candidates-by-function candidates #'flx-score)))
+      ((or fuz-skim fuz-clangd)
+       (require 'fuz)
+       (let ((func (if (eq company-fuzzy-sorting-backend 'fuz-skim)
+                       'fuz-calc-score-skim
+                     'fuz-calc-score-clangd)))
+         (setq candidates
+               (company-fuzzy--sort-candidates-by-function candidates
+                                                           (lambda (str pattern)
+                                                             (funcall func pattern str))))))
       (liquidmetal
        (require 'liquidmetal)
        (setq candidates

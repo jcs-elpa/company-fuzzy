@@ -61,8 +61,10 @@ Currently supports these values,
 
 * *`none`* - Gives you the raw result.
 * *`alphabetic`* - Sort in the alphabetic order. (VSCode)
-* *`flx`* - Use library [flx](https://github.com/lewang/flx) as matching engine. (Sublime Text)
 * *`flex`* - Use library [flex](https://github.com/jcs-elpa/flex) as matching engine.
+* *`flx`* - Use library [flx](https://github.com/lewang/flx) as matching engine. (Sublime Text)
+* *`fuz-skim`* - Use library [fuz](https://github.com/rustify-emacs/fuz.el)'s skim algorithm.
+* *`fuz-clangd`* - Use library [fuz](https://github.com/rustify-emacs/fuz.el)'s clangd algorithm.
 * *`liquidmetal`* - Use library [liquidmetal](https://github.com/jcs-elpa/liquidmetal) similar to [Quicksilver](https://qsapp.com/) algorithm.
 
 Or implements your sorting algorithm yourself? Assgin the function to
