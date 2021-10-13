@@ -8,7 +8,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## 1.2.3 (Unreleased)
 > Released N/A
 
-* N/A
+* Add support for [fuz.el](https://github.com/rustify-emacs/fuz.el).
 
 ## 1.2.2
 > Released Oct 9, 2021
