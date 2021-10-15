@@ -9,6 +9,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 > Released N/A
 
 * Add support for [fuz.el](https://github.com/rustify-emacs/fuz.el).
+* Add support for [sublime-fuzzy](https://github.com/jcs-elpa/sublime-fuzzy).
 
 ## 1.2.2
 > Released Oct 9, 2021
