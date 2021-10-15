@@ -66,6 +66,7 @@ Currently supports these values,
 * *`fuz-skim`* - Use library [fuz](https://github.com/rustify-emacs/fuz.el)'s skim algorithm.
 * *`fuz-clangd`* - Use library [fuz](https://github.com/rustify-emacs/fuz.el)'s clangd algorithm.
 * *`liquidmetal`* - Use library [liquidmetal](https://github.com/jcs-elpa/liquidmetal) similar to [Quicksilver](https://qsapp.com/) algorithm.
+* *`sublime-fuzzy`* - Use library [sublime-fuzzy](https://github.com/jcs-elpa/sublime-fuzzy) as matching engine. (Sublime Text)
 
 Or implements your sorting algorithm yourself? Assgin the function to
 `company-fuzzy-sorting-function` variable like this.

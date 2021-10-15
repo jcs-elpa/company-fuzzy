@@ -53,7 +53,8 @@
                  (const :tag "flx" flx)
                  (const :tag "fuz-skim" fuz-skim)
                  (const :tag "fuz-clangd" fuz-clangd)
-                 (const :tag "liquidmetal" liquidmetal))
+                 (const :tag "liquidmetal" liquidmetal)
+                 (const :tag "sublime-fuzzy" sublime-fuzzy))
   :group 'company-fuzzy)
 
 (defcustom company-fuzzy-prefix-on-top t
@@ -325,8 +326,8 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
       (when (company-fuzzy--string-prefix-p prefix cand)
         (push cand prefix-matches)
         (setq candidates (remove cand candidates))))
-    (setq prefix-matches (sort prefix-matches #'string-lessp))
-    (setq candidates (append prefix-matches candidates)))
+    (setq prefix-matches (sort prefix-matches #'string-lessp)
+          candidates (append prefix-matches candidates)))
   candidates)
 
 (defun company-fuzzy--sort-candidates-by-function (candidates fnc)
@@ -334,7 +335,7 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
   (let ((scoring-table (ht-create)) scoring-keys prefix scoring score)
     (dolist (cand candidates)
       (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match)
-            scoring (funcall fnc cand prefix)
+            scoring (ignore-errors (funcall fnc cand prefix))
             score (cond ((listp scoring) (nth 0 scoring))
                         ((numberp scoring) scoring)
                         (t 0)))
@@ -381,7 +382,14 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
       (`liquidmetal
        (require 'liquidmetal)
        (setq candidates
-             (company-fuzzy--sort-candidates-by-function candidates #'liquidmetal-score))))
+             (company-fuzzy--sort-candidates-by-function candidates #'liquidmetal-score)))
+      (`sublime-fuzzy
+       (require 'sublime-fuzzy)
+       (sublime-fuzzy-load-dyn)
+       (setq candidates
+             (company-fuzzy--sort-candidates-by-function candidates
+                                                         (lambda (str pattern)
+                                                           (sublime-fuzzy-score pattern str))))))
     (when company-fuzzy-prefix-on-top
       (setq candidates (company-fuzzy--sort-prefix-on-top candidates)))
     (when (functionp company-fuzzy-sorting-function)
