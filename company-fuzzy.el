@@ -138,6 +138,8 @@
 (declare-function fuz-calc-score-skim "ext:fuz.el")
 (declare-function fuz-calc-score-clangd "ext:fuz.el")
 (declare-function liquidmetal-score "ext:liquidmetal.el")
+(declare-function sublime-fuzzy-score "ext:sublime-fuzzy.el")
+(declare-function sublime-fuzzy-load-dyn "ext:sublime-fuzzy.el")
 
 ;;
 ;; (@* "Mode" )
