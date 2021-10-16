@@ -53,6 +53,8 @@
                  (const :tag "flx" flx)
                  (const :tag "fuz-skim" fuz-skim)
                  (const :tag "fuz-clangd" fuz-clangd)
+                 (const :tag "fuz-bin-skim" fuz-bin-skim)
+                 (const :tag "fuz-bin-clangd" fuz-bin-clangd)
                  (const :tag "liquidmetal" liquidmetal)
                  (const :tag "sublime-fuzzy" sublime-fuzzy))
   :group 'company-fuzzy)
@@ -135,9 +137,16 @@
 
 (declare-function flex-score "ext:flex.el")
 (declare-function flx-score "ext:flx.el")
+
 (declare-function fuz-calc-score-skim "ext:fuz.el")
 (declare-function fuz-calc-score-clangd "ext:fuz.el")
+
+(declare-function fuz-bin-score-skim "ext:fuz-bin.el")
+(declare-function fuz-bin-score-clangd "ext:fuz-bin.el")
+(declare-function fuz-bin-load-dyn "ext:fuz-bin.el")
+
 (declare-function liquidmetal-score "ext:liquidmetal.el")
+
 (declare-function sublime-fuzzy-score "ext:sublime-fuzzy.el")
 (declare-function sublime-fuzzy-load-dyn "ext:sublime-fuzzy.el")
 
@@ -374,9 +383,20 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
              (company-fuzzy--sort-candidates-by-function candidates #'flx-score)))
       ((or fuz-skim fuz-clangd)
        (require 'fuz)
+       (unless (require 'fuz-core nil t) (fuz-build-and-load-dymod))
        (let ((func (if (eq company-fuzzy-sorting-backend 'fuz-skim)
                        'fuz-calc-score-skim
                      'fuz-calc-score-clangd)))
+         (setq candidates
+               (company-fuzzy--sort-candidates-by-function candidates
+                                                           (lambda (str pattern)
+                                                             (funcall func pattern str))))))
+      ((or fuz-bin-skim fuz-bin-clangd)
+       (require 'fuz-bin)
+       (fuz-bin-load-dyn)
+       (let ((func (if (eq company-fuzzy-sorting-backend 'fuz-bin-skim)
+                       'fuz-bin-score-skim
+                     'fuz-bin-score-clangd)))
          (setq candidates
                (company-fuzzy--sort-candidates-by-function candidates
                                                            (lambda (str pattern)
