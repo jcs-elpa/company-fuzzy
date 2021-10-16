@@ -130,9 +130,6 @@
 (defvar-local company-fuzzy--ht-history (ht-create)
   "Store list data of history data '(backend . candidates)'.")
 
-(defvar company-fuzzy--cache (ht-create)
-  "Cache for scoring engine.")
-
 ;;
 ;; (@* "External" )
 ;;
@@ -387,8 +384,7 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
       (`flx
        (require 'flx)
        (setq candidates
-             (company-fuzzy--sort-candidates-by-function candidates (lambda (str pattern)
-                                                                      (flx-score str pattern company-fuzzy--cache)))))
+             (company-fuzzy--sort-candidates-by-function candidates #'flx-score)))
       ((or fuz-skim fuz-clangd)
        (require 'fuz)
        (unless (require 'fuz-core nil t) (fuz-build-and-load-dymod))
