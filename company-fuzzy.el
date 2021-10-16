@@ -140,6 +140,7 @@
 
 (declare-function fuz-calc-score-skim "ext:fuz.el")
 (declare-function fuz-calc-score-clangd "ext:fuz.el")
+(declare-function fuz-build-and-load-dymod "ext:fuz.el")
 
 (declare-function fuz-bin-score-skim "ext:fuz-bin.el")
 (declare-function fuz-bin-score-clangd "ext:fuz-bin.el")
@@ -157,19 +158,19 @@
 (defun company-fuzzy--enable ()
   "Record down all other backend to `company-fuzzy--backends'."
   (unless company-fuzzy--recorded-backends
-    (setq company-fuzzy--recorded-backends company-backends)
-    (setq company-fuzzy--backends (company-fuzzy--normalize-backend-list company-fuzzy--recorded-backends))
-    (setq-local company-backends '(company-fuzzy-all-other-backends))
-    (setq-local company-transformers (append company-transformers '(company-fuzzy--sort-candidates)))
+    (setq company-fuzzy--recorded-backends company-backends
+          company-fuzzy--backends (company-fuzzy--normalize-backend-list company-fuzzy--recorded-backends))
+    (setq-local company-backends '(company-fuzzy-all-other-backends)
+                company-transformers (append company-transformers '(company-fuzzy--sort-candidates)))
     (advice-add 'company--insert-candidate :before #'company-fuzzy--insert-candidate)))
 
 (defun company-fuzzy--disable ()
   "Revert all other backend back to `company-backends'."
   (when company-fuzzy--recorded-backends
-    (setq-local company-backends company-fuzzy--recorded-backends)
-    (setq company-fuzzy--recorded-backends nil)
-    (setq company-fuzzy--backends nil)
-    (setq-local company-transformers (delq 'company-fuzzy--sort-candidates company-transformers))
+    (setq-local company-backends company-fuzzy--recorded-backends
+                company-transformers (delq 'company-fuzzy--sort-candidates company-transformers))
+    (setq company-fuzzy--recorded-backends nil
+          company-fuzzy--backends nil)
     (advice-remove 'company--insert-candidate #'company-fuzzy--insert-candidate)))
 
 ;;;###autoload
