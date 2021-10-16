@@ -32,12 +32,13 @@
 
 ;;; Code:
 
-(require 'company)
 (require 'cl-lib)
 (require 'ffap)
-(require 's)
 (require 'subr-x)
+
+(require 'company)
 (require 'ht)
+(require 's)
 
 (defgroup company-fuzzy nil
   "Fuzzy matching for `company-mode'."
@@ -128,6 +129,9 @@
 
 (defvar-local company-fuzzy--ht-history (ht-create)
   "Store list data of history data '(backend . candidates)'.")
+
+(defvar company-fuzzy--cache (ht-create)
+  "Cache for scoring engine.")
 
 ;;
 ;; (@* "External" )
@@ -342,12 +346,14 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
           candidates (append prefix-matches candidates)))
   candidates)
 
-(defun company-fuzzy--sort-candidates-by-function (candidates fnc)
+(defun company-fuzzy--sort-candidates-by-function (candidates fnc &optional flip)
   "Sort CANDIDATES with function call FNC."
   (let ((scoring-table (ht-create)) scoring-keys prefix scoring score)
     (dolist (cand candidates)
       (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match)
-            scoring (ignore-errors (funcall fnc cand prefix))
+            scoring (ignore-errors
+                      (if flip (funcall fnc prefix cand)
+                        (funcall fnc cand prefix)))
             score (cond ((listp scoring) (nth 0 scoring))
                         ((numberp scoring) scoring)
                         (t 0)))
@@ -381,7 +387,8 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
       (`flx
        (require 'flx)
        (setq candidates
-             (company-fuzzy--sort-candidates-by-function candidates #'flx-score)))
+             (company-fuzzy--sort-candidates-by-function candidates (lambda (str pattern)
+                                                                      (flx-score str pattern company-fuzzy--cache)))))
       ((or fuz-skim fuz-clangd)
        (require 'fuz)
        (unless (require 'fuz-core nil t) (fuz-build-and-load-dymod))
@@ -389,9 +396,7 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
                        'fuz-calc-score-skim
                      'fuz-calc-score-clangd)))
          (setq candidates
-               (company-fuzzy--sort-candidates-by-function candidates
-                                                           (lambda (str pattern)
-                                                             (funcall func pattern str))))))
+               (company-fuzzy--sort-candidates-by-function candidates func t))))
       ((or fuz-bin-skim fuz-bin-clangd)
        (require 'fuz-bin)
        (fuz-bin-load-dyn)
@@ -399,9 +404,7 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
                        'fuz-bin-score-skim
                      'fuz-bin-score-clangd)))
          (setq candidates
-               (company-fuzzy--sort-candidates-by-function candidates
-                                                           (lambda (str pattern)
-                                                             (funcall func pattern str))))))
+               (company-fuzzy--sort-candidates-by-function candidates func t))))
       (`liquidmetal
        (require 'liquidmetal)
        (setq candidates
@@ -410,9 +413,7 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
        (require 'sublime-fuzzy)
        (sublime-fuzzy-load-dyn)
        (setq candidates
-             (company-fuzzy--sort-candidates-by-function candidates
-                                                         (lambda (str pattern)
-                                                           (sublime-fuzzy-score pattern str))))))
+             (company-fuzzy--sort-candidates-by-function candidates #'sublime-fuzzy-score t))))
     (when company-fuzzy-prefix-on-top
       (setq candidates (company-fuzzy--sort-prefix-on-top candidates)))
     (when (functionp company-fuzzy-sorting-function)
