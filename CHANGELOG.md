@@ -11,6 +11,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 * Add support for [fuz.el](https://github.com/rustify-emacs/fuz.el).
 * Add support for [sublime-fuzzy](https://github.com/jcs-elpa/sublime-fuzzy).
 * Add support for [fuz-bin](https://github.com/jcs-elpa/fuz-bin).
+* Add cache support for cacheable sorting backend.
 
 ## 1.2.2
 > Released Oct 9, 2021
