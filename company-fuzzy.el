@@ -52,6 +52,7 @@
                  (const :tag "alphabetic" alphabetic)
                  (const :tag "flex" flex)
                  (const :tag "flx" flx)
+                 (const :tag "flxy" flxy)
                  (const :tag "fuz-skim" fuz-skim)
                  (const :tag "fuz-clangd" fuz-clangd)
                  (const :tag "fuz-bin-skim" fuz-bin-skim)
@@ -385,6 +386,10 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
        (require 'flx)
        (setq candidates
              (company-fuzzy--sort-candidates-by-function candidates #'flx-score)))
+      (`flxy
+       (require 'flxy)
+       (setq candidates
+             (company-fuzzy--sort-candidates-by-function candidates #'flxy-score)))
       ((or fuz-skim fuz-clangd)
        (require 'fuz)
        (unless (require 'fuz-core nil t) (fuz-build-and-load-dymod))
