@@ -140,6 +140,9 @@
 (declare-function flex-score "ext:flex.el")
 (declare-function flx-score "ext:flx.el")
 
+(declare-function flxy-score "ext:flxy.el")
+(declare-function flxy-load-dyn "ext:flxy.el")
+
 (declare-function fuz-calc-score-skim "ext:fuz.el")
 (declare-function fuz-calc-score-clangd "ext:fuz.el")
 (declare-function fuz-build-and-load-dymod "ext:fuz.el")
@@ -388,6 +391,7 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
              (company-fuzzy--sort-candidates-by-function candidates #'flx-score)))
       (`flxy
        (require 'flxy)
+       (flxy-load-dyn)
        (setq candidates
              (company-fuzzy--sort-candidates-by-function candidates #'flxy-score)))
       ((or fuz-skim fuz-clangd)
