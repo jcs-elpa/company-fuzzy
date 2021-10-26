@@ -634,9 +634,10 @@ Insert .* between each char."
   (cond
    ;; NOTE: Asynchronous
    ((company-fuzzy--async-candidates-p candidates)
-    (funcall (cdr candidates)
-             (lambda (async-candidates)
-               (company-fuzzy--register-candidates backend async-candidates))))
+    (ignore-errors
+      (funcall (cdr candidates)
+               (lambda (async-candidates)
+                 (company-fuzzy--register-candidates backend async-candidates)))))
    ;; NOTE: Synchronous
    ;;
    ;; This is the final ensure step before processing it to scoring phase.
