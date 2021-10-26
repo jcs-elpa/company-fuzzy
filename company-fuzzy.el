@@ -353,7 +353,9 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
   candidates)
 
 (defun company-fuzzy--sort-candidates-by-function (candidates fnc &optional flip)
-  "Sort CANDIDATES with function call FNC."
+  "Sort CANDIDATES with function call FNC.
+
+If optional argument FLIP is non-nil, reverse query and pattern order."
   (let ((scoring-table (ht-create)) scoring-keys prefix scoring score)
     (dolist (cand candidates)
       (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match)
