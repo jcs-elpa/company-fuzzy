@@ -5,28 +5,29 @@ All notable changes to this project will be documented in this file.
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
 
-## 1.2.3 (Unreleased)
+## 1.3.0 (Unreleased)
 > Released N/A
 
-* Add support for [fuz.el](https://github.com/rustify-emacs/fuz.el).
-* Add support for [sublime-fuzzy](https://github.com/jcs-elpa/sublime-fuzzy).
-* Add support for [fuz-bin](https://github.com/jcs-elpa/fuz-bin).
-* Add support for [flxy](https://github.com/jcs-elpa/flxy).
+* Added support for [fuz.el](https://github.com/rustify-emacs/fuz.el).
+* Added support for [sublime-fuzzy](https://github.com/jcs-elpa/sublime-fuzzy).
+* Added support for [fuz-bin](https://github.com/jcs-elpa/fuz-bin).
+* Added support for [flxy](https://github.com/jcs-elpa/flxy).
+* Started support `async` backends.
 
 ## 1.2.2
 > Released Oct 9, 2021
 
-* Add support for [flex](https://github.com/jcs-elpa/flex).
-* Add support for [liquidmetal](https://github.com/jcs-elpa/liquidmetal).
-* Fix invalid output for command `company-diag`.
+* Added support for [flex](https://github.com/jcs-elpa/flex).
+* Added support for [liquidmetal](https://github.com/jcs-elpa/liquidmetal).
+* Fixed invalid output for command `company-diag`.
 * Introduce new variable `company-fuzzy-passthrough-backends` to filter out already fuzzied candidates.
-* Fix error from `company-tng-mode`.
-* Add functionality to adapt all commands from original company backends.
+* Fixed error from `company-tng-mode`.
+* Added functionality to adapt all commands from original company backends.
 
 ## 1.2.1
 > Released Jan 24, 2021
 
-* Use hash table library `ht`.
+* Used hash table library `ht`.
 
 ### 1.0.1
 > Released Nov 19, 2020
