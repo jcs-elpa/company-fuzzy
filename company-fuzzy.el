@@ -604,7 +604,7 @@ Insert .* between each char."
     ;;
     ;; The function `company-fuzzy--match-string' does the very first
     ;; basic filtering in order to lower the performance before sending
-    ;; to function `flx-score'.
+    ;; to function scoring engine.
     (when (and (not company-fuzzy--is-trigger-prefix-p)
                (company-fuzzy--valid-candidates-p temp-candidates)
                prefix-com)
