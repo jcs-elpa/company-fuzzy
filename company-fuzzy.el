@@ -52,6 +52,7 @@
                  (const :tag "alphabetic" alphabetic)
                  (const :tag "flex" flex)
                  (const :tag "flx" flx)
+                 (const :tag "flx-rs" flx-rs)
                  (const :tag "flxy" flxy)
                  (const :tag "fuz-skim" fuz-skim)
                  (const :tag "fuz-clangd" fuz-clangd)
@@ -139,6 +140,8 @@
 
 (declare-function flex-score "ext:flex.el")
 (declare-function flx-score "ext:flx.el")
+(declare-function flx-rs-score "ext:flx-rs.el")
+(declare-function flx-rs-load-dyn "ext:flx-rs.el")
 
 (declare-function flxy-score "ext:flxy.el")
 (declare-function flxy-load-dyn "ext:flxy.el")
@@ -363,6 +366,7 @@ If optional argument FLIP is non-nil, reverse query and pattern order."
                       (if flip (funcall fnc prefix cand)
                         (funcall fnc cand prefix)))
             score (cond ((listp scoring) (nth 0 scoring))
+                        ((vectorp scoring) (aref scoring 0))
                         ((numberp scoring) scoring)
                         (t 0)))
       (when score
@@ -396,6 +400,11 @@ If optional argument FLIP is non-nil, reverse query and pattern order."
        (require 'flx)
        (setq candidates
              (company-fuzzy--sort-candidates-by-function candidates #'flx-score)))
+      (`flx-rs
+       (require 'flx-rs)
+       (flx-rs-load-dyn)
+       (setq candidates
+             (company-fuzzy--sort-candidates-by-function candidates #'flx-rs-score)))
       (`flxy
        (require 'flxy)
        (flxy-load-dyn)

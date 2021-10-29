@@ -63,6 +63,7 @@ Currently supports these values,
 * *`alphabetic`* - Sort in the alphabetic order. (VSCode)
 * *`flex`* - Use library [flex](https://github.com/jcs-elpa/flex) as matching engine.
 * *`flx`* - Use library [flx](https://github.com/lewang/flx) as matching engine. (Sublime Text)
+* *`flx-rs`* - Use library [flx-rs](https://github.com/jcs-elpa/flx-rs) as matching engine. (Sublime Text)
 * *`flxy`* - Use library [flxy](https://github.com/jcs-elpa/flxy) as matching engine.
 * *`fuz-skim`* - Use library [fuz.el](https://github.com/rustify-emacs/fuz.el)'s skim algorithm.
 * *`fuz-clangd`* - Use library [fuz.el](https://github.com/rustify-emacs/fuz.el)'s clangd algorithm.
