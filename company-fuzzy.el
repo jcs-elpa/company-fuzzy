@@ -163,8 +163,28 @@
 ;; (@* "Mode" )
 ;;
 
+(defun company-fuzzy--funcall-fboundp (fnc &rest args)
+  "Call FNC with ARGS if exists."
+  (when (fboundp fnc) (if args (funcall fnc args) (funcall fnc))))
+
+(defun company-fuzzy--init ()
+  "Initialize all sorting backends."
+  (cl-case company-fuzzy-sorting-backend
+    (`flex (require 'flex))
+    (`flx (require 'flx))
+    (`flx-rs (require 'flx-rs) (flx-rs-load-dyn))
+    (`flxy (require 'flxy) (flxy-load-dyn))
+    ((or fuz-skim fuz-clangd)
+     (require 'fuz)
+     (unless (require 'fuz-core nil t) (fuz-build-and-load-dymod)))
+    ((or fuz-bin-skim fuz-bin-clangd)
+     (require 'fuz-bin) (fuz-bin-load-dyn))
+    (`liquidmetal (require 'liquidmetal))
+    (`sublime-fuzzy (require 'sublime-fuzzy) (sublime-fuzzy-load-dyn))))
+
 (defun company-fuzzy--enable ()
   "Record down all other backend to `company-fuzzy--backends'."
+  (company-fuzzy--init)
   (unless company-fuzzy--recorded-backends
     (setq company-fuzzy--recorded-backends company-backends
           company-fuzzy--backends (company-fuzzy--normalize-backend-list company-fuzzy--recorded-backends))
@@ -393,46 +413,33 @@ If optional argument FLIP is non-nil, reverse query and pattern order."
       (`none candidates)
       (`alphabetic (setq candidates (sort candidates #'string-lessp)))
       (`flex
-       (require 'flex)
        (setq candidates
              (company-fuzzy--sort-candidates-by-function candidates #'flex-score)))
       (`flx
-       (require 'flx)
        (setq candidates
              (company-fuzzy--sort-candidates-by-function candidates #'flx-score)))
       (`flx-rs
-       (require 'flx-rs)
-       (flx-rs-load-dyn)
        (setq candidates
              (company-fuzzy--sort-candidates-by-function candidates #'flx-rs-score)))
       (`flxy
-       (require 'flxy)
-       (flxy-load-dyn)
        (setq candidates
              (company-fuzzy--sort-candidates-by-function candidates #'flxy-score)))
       ((or fuz-skim fuz-clangd)
-       (require 'fuz)
-       (unless (require 'fuz-core nil t) (fuz-build-and-load-dymod))
        (let ((func (if (eq company-fuzzy-sorting-backend 'fuz-skim)
                        'fuz-calc-score-skim
                      'fuz-calc-score-clangd)))
          (setq candidates
                (company-fuzzy--sort-candidates-by-function candidates func t))))
       ((or fuz-bin-skim fuz-bin-clangd)
-       (require 'fuz-bin)
-       (fuz-bin-load-dyn)
        (let ((func (if (eq company-fuzzy-sorting-backend 'fuz-bin-skim)
                        'fuz-bin-score-skim
                      'fuz-bin-score-clangd)))
          (setq candidates
                (company-fuzzy--sort-candidates-by-function candidates func t))))
       (`liquidmetal
-       (require 'liquidmetal)
        (setq candidates
              (company-fuzzy--sort-candidates-by-function candidates #'liquidmetal-score)))
       (`sublime-fuzzy
-       (require 'sublime-fuzzy)
-       (sublime-fuzzy-load-dyn)
        (setq candidates
              (company-fuzzy--sort-candidates-by-function candidates #'sublime-fuzzy-score t))))
     (when company-fuzzy-prefix-on-top
