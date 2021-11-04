@@ -5,8 +5,8 @@ All notable changes to this project will be documented in this file.
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
 
-## 1.3.0 (Unreleased)
-> Released N/A
+## 1.3.0
+> Released Nov 4, 2021
 
 * Added support for [fuz.el](https://github.com/rustify-emacs/fuz.el).
 * Added support for [sublime-fuzzy](https://github.com/jcs-elpa/sublime-fuzzy).
