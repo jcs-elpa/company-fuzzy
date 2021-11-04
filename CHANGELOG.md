@@ -14,6 +14,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 * Added support for [flxy](https://github.com/jcs-elpa/flxy).
 * Started support `async` backends.
 * Added support for [flx-rs](https://github.com/jcs-elpa/flx-rs).
+* Initialize sorting backends at start instead during runtime.
 
 ## 1.2.2
 > Released Oct 9, 2021
