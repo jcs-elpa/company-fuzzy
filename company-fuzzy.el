@@ -293,8 +293,8 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
 
 (defun company-fuzzy--backend-command (candidate command)
   "Find the backend from the CANDIDATE then call the COMMAND."
-  (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
-    (if (or (string-empty-p candidate) (not backend)) nil
+  (unless (string-empty-p candidate)
+    (when-let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
       (company-fuzzy--call-backend backend command candidate))))
 
 ;;
@@ -490,12 +490,11 @@ does best describe the for this candidate."
      ;; for the best match.
      ;;
      ;; Example, if I have path `/path/to/dir'; then it shall return `dir'.
-     (let ((prefix (company-files 'prefix)))
-       (when prefix
-         (let* ((splitted (split-string prefix "/" t))
-                (len-splitted (length splitted))
-                (last (nth (1- len-splitted) splitted)))
-           last))))
+     (when-let* ((prefix (company-files 'prefix))
+                 (splitted (split-string prefix "/" t))
+                 (len-splitted (length splitted))
+                 (last (nth (1- len-splitted) splitted)))
+       last))
     (`company-yasnippet (thing-at-point 'symbol))
     (t company-fuzzy--prefix)))
 
@@ -590,8 +589,8 @@ Insert .* between each char."
 
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
-  (setq company-fuzzy--ht-backends-candidates (ht-create)  ; Clean up.
-        company-fuzzy--is-trigger-prefix-p (company-fuzzy--trigger-prefix-p))
+  (ht-clear company-fuzzy--ht-backends-candidates)  ; Clean up
+  (setq company-fuzzy--is-trigger-prefix-p (company-fuzzy--trigger-prefix-p))
   (dolist (backend company-fuzzy--backends)
     (if (memq backend company-fuzzy-passthrough-backends)
         (company-fuzzy--candidates-from-passthrough-backend backend)
