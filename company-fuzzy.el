@@ -7,7 +7,7 @@
 ;; Description: Fuzzy matching for `company-mode'.
 ;; Keyword: auto auto-complete complete fuzzy matching
 ;; Version: 1.3.0
-;; Package-Requires: ((emacs "24.4") (company "0.8.12") (s "1.12.0") (ht "2.0"))
+;; Package-Requires: ((emacs "26.1") (company "0.8.12") (s "1.12.0") (ht "2.0"))
 ;; URL: https://github.com/jcs-elpa/company-fuzzy
 
 ;; This file is NOT part of GNU Emacs.
