@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
 
+## 1.4.0
+> Released Jan 27, 2022
+
+* Improve some operations using some macros from `subr-x`.
+* Drop support for Emacs version `24.x` and `25.x`.
+
 ## 1.3.0
 > Released Nov 4, 2021
 
