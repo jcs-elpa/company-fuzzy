@@ -28,7 +28,7 @@ hence all possible candidates will be shown in the auto-complete menu.
   * Uses [ycmd](https://github.com/Valloric/ycmd) as backend to provide functionalities.
   * Quite hard to config properly.
 * [company-flx](https://github.com/PythonNut/company-flx)
-  * Uses library [flx](https://github.com/lewang/flx).
+  * Uses library [flx](https://github.com/lewang/flx). (Optional for us)
   * Only works with `capf` backend currently.
 
 ## 💾 Quickstart
