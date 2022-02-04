@@ -31,6 +31,18 @@ hence all possible candidates will be shown in the auto-complete menu.
   * Uses library [flx](https://github.com/lewang/flx).
   * Only works with `elisp-mode` currently.
 
+## 💾 Quickstart
+
+```el
+(use-package company-fuzzy
+  :hook (company-mode . company-fuzzy-mode)
+  :init
+  (setq company-fuzzy-sorting-backend 'flx
+        company-fuzzy-prefix-on-top nil
+        company-fuzzy-history-backends '(company-yasnippet)
+        company-fuzzy-trigger-symbols '("." "->" "<" "\"" "'" "@")))
+```
+
 ## 🔧 Usage
 
 You can enable it globally by adding this line to your config
