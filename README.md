@@ -29,7 +29,7 @@ hence all possible candidates will be shown in the auto-complete menu.
   * Quite hard to config properly.
 * [company-flx](https://github.com/PythonNut/company-flx)
   * Uses library [flx](https://github.com/lewang/flx).
-  * Only works with `elisp-mode` currently.
+  * Only works with `capf` backend currently.
 
 ## 💾 Quickstart
 
