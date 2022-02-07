@@ -709,10 +709,10 @@ Insert .* between each char."
   "Safe way to remove BACKEND."
   (if company-fuzzy-mode
       (progn
-        (cl-remove backend company-fuzzy--backends)
-        (cl-remove backend company-fuzzy--recorded-backends backend))
+        (delete backend company-fuzzy--backends)
+        (delete backend company-fuzzy--recorded-backends))
     (make-local-variable 'company-backends)
-    (cl-remove backend company-backends backend))
+    (delete backend company-backends))
   (company-fuzzy--backend-organize))
 
 (provide 'company-fuzzy)
