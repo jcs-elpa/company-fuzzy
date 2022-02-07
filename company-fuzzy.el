@@ -484,7 +484,7 @@ For instance, if there is a candidate function `buffer-file-name' and with
 current prefix `bfn'.  It will just return `bfn' because the current prefix
 does best describe the for this candidate."
   (cl-case backend
-    (`company-capf (thing-at-point 'symbol))
+    (`company-capf (company-capf 'prefix))
     (`company-files
      ;; NOTE: For `company-files', we will return the last section of the path
      ;; for the best match.
@@ -495,7 +495,7 @@ does best describe the for this candidate."
                  (len-splitted (length splitted))
                  (last (nth (1- len-splitted) splitted)))
        last))
-    (`company-yasnippet (thing-at-point 'symbol))
+    (`company-yasnippet (company-yasnippet 'prefix))
     (t company-fuzzy--prefix)))
 
 (defun company-fuzzy--backend-prefix-get (backend)
@@ -522,7 +522,7 @@ P.S. Not all backend work this way."
              (setq new-prefix
                    (substring prefix 0 (- (length prefix) (length last)))))
            new-prefix))))
-    (`company-yasnippet "")
+    (`company-yasnippet (company-yasnippet 'prefix))
     (t (ignore-errors (substring company-fuzzy--prefix 0 1)))))
 
 (defun company-fuzzy--backend-prefix (backend type)
