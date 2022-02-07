@@ -682,5 +682,38 @@ Insert .* between each char."
     (`pre-render (company-fuzzy--pre-render arg (nth 0 ignored)))
     (t (company-fuzzy--backend-command arg command))))
 
+;;
+;; (@* "Users" )
+;;
+
+(defun company-fuzzy--backend-organize ()
+  "Organize backend after modified the backend list."
+  (if company-fuzzy-mode
+      (setq company-fuzzy--backends (delete-dups company-fuzzy--backends)
+            company-fuzzy--recorded-backends (delete-dups company-fuzzy--recorded-backends))
+    (setq company-backends (delete-dups company-backends))))
+
+;;;###autoload
+(defun company-fuzzy-backend-add (backend)
+  "Safe way to add BACKEND."
+  (if company-fuzzy-mode
+      (progn
+        (add-to-list 'company-fuzzy--backends backend t)
+        (add-to-list 'company-fuzzy--recorded-backends backend t))
+    (make-local-variable 'company-backends)
+    (add-to-list 'company-backends backend t))
+  (company-fuzzy--backend-organize))
+
+;;;###autoload
+(defun company-fuzzy-backend-remove (backend)
+  "Safe way to remove BACKEND."
+  (if company-fuzzy-mode
+      (progn
+        (cl-remove backend company-fuzzy--backends)
+        (cl-remove backend company-fuzzy--recorded-backends backend))
+    (make-local-variable 'company-backends)
+    (cl-remove backend company-backends backend))
+  (company-fuzzy--backend-organize))
+
 (provide 'company-fuzzy)
 ;;; company-fuzzy.el ends here
