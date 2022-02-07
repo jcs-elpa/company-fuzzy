@@ -471,7 +471,7 @@ This function is use when function `company-fuzzy--insert-candidate' is
 called.  It returns the current selection prefix to prevent completion
 completes in an odd way."
   (cl-case backend
-    (`company-files (company-files 'prefix))
+    (`company-files (funcall backend 'prefix))
     (t (company-fuzzy--backend-prefix backend 'match))))
 
 (defun company-fuzzy--backend-prefix-match (backend)
@@ -484,7 +484,7 @@ For instance, if there is a candidate function `buffer-file-name' and with
 current prefix `bfn'.  It will just return `bfn' because the current prefix
 does best describe the for this candidate."
   (cl-case backend
-    (`company-capf (company-capf 'prefix))
+    ((or company-capf company-yasnippet) (funcall backend 'prefix))
     (`company-files
      ;; NOTE: For `company-files', we will return the last section of the path
      ;; for the best match.
@@ -495,7 +495,6 @@ does best describe the for this candidate."
                  (len-splitted (length splitted))
                  (last (nth (1- len-splitted) splitted)))
        last))
-    (`company-yasnippet (company-yasnippet 'prefix))
     (t company-fuzzy--prefix)))
 
 (defun company-fuzzy--backend-prefix-get (backend)
@@ -525,20 +524,17 @@ P.S. Not all backend work this way."
     (`company-yasnippet (company-yasnippet 'prefix))
     (t (ignore-errors (substring company-fuzzy--prefix 0 1)))))
 
+(defun company-fuzzy--backend-prefix-candidate (cand type)
+  "Get the backend prefix by CAND and TYPE."
+  (let ((backend (company-fuzzy--get-backend-by-candidate cand)))
+    (company-fuzzy--backend-prefix backend type)))
+
 (defun company-fuzzy--backend-prefix (backend type)
   "Get the BACKEND prefix by TYPE."
   (cl-case type
     (`complete (company-fuzzy--backend-prefix-complete backend))
     (`match (company-fuzzy--backend-prefix-match backend))
     (`get (company-fuzzy--backend-prefix-get backend))))
-
-(defun company-fuzzy--backend-prefix-candidate (cand type)
-  "Get the backend prefix by CAND and TYPE."
-  (let ((backend (company-fuzzy--get-backend-by-candidate cand)))
-    (cl-case type
-      (`complete (company-fuzzy--backend-prefix-complete backend))
-      (`match (company-fuzzy--backend-prefix-match backend))
-      (`get (company-fuzzy--backend-prefix-get backend)))))
 
 ;;
 ;; (@* "Fuzzy Matching" )
