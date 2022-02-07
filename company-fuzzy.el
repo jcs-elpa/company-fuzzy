@@ -484,7 +484,7 @@ For instance, if there is a candidate function `buffer-file-name' and with
 current prefix `bfn'.  It will just return `bfn' because the current prefix
 does best describe the for this candidate."
   (cl-case backend
-    ((or company-capf company-yasnippet) (funcall backend 'prefix))
+    ((company-capf company-yasnippet) (funcall backend 'prefix))
     (`company-files
      ;; NOTE: For `company-files', we will return the last section of the path
      ;; for the best match.
