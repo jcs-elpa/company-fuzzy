@@ -137,6 +137,7 @@
 ;;
 
 (declare-function company-files "ext:company-files.el")
+(declare-function company-yasnippet "ext:company-yasnippet.el")
 
 (declare-function flex-score "ext:flex.el")
 (declare-function flx-score "ext:flx.el")
