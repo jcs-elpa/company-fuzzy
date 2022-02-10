@@ -518,16 +518,15 @@ that may be relavent to the first character `b'.
 P.S. Not all backend work this way."
   (cl-case backend
     (`company-files
-     (let ((prefix (company-files 'prefix)))
-       (when prefix
-         (let* ((splitted (split-string prefix "/" t))
-                (len-splitted (length splitted))
-                (last (nth (1- len-splitted) splitted))
-                (new-prefix prefix))
-           (when (< 1 len-splitted)
-             (setq new-prefix
-                   (substring prefix 0 (- (length prefix) (length last)))))
-           new-prefix))))
+     (when-let ((prefix (company-files 'prefix)))
+       (let* ((splitted (split-string prefix "/" t))
+              (len-splitted (length splitted))
+              (last (nth (1- len-splitted) splitted))
+              (new-prefix prefix))
+         (when (< 1 len-splitted)
+           (setq new-prefix
+                 (substring prefix 0 (- (length prefix) (length last)))))
+         new-prefix)))
     (`company-yasnippet (company-yasnippet 'prefix))
     (t (ignore-errors (substring company-fuzzy--prefix 0 1)))))
 
