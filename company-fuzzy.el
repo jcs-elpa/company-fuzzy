@@ -469,7 +469,7 @@ If optional argument FLIP is non-nil, reverse query and pattern order."
   "Guess the current BACKEND prefix."
   (let ((prefix (funcall backend 'prefix)))
     (if (stringp prefix) prefix
-      company-fuzzy--prefix)))  ; Fallback to default prefix
+      (thing-at-point 'symbol))))  ; Fallback
 
 (defun company-fuzzy--backend-prefix-complete (backend)
   "Return prefix for each BACKEND while doing completion.
