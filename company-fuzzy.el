@@ -465,6 +465,12 @@ If optional argument FLIP is non-nil, reverse query and pattern order."
 ;; (@* "Prefix" )
 ;;
 
+(defun company-fuzzy--valid-prefix (backend)
+  "Guess the current BACKEND prefix."
+  (let ((prefix (funcall backend 'prefix)))
+    (if (stringp prefix) prefix
+      company-fuzzy--prefix)))  ; Fallback to default prefix
+
 (defun company-fuzzy--backend-prefix-complete (backend)
   "Return prefix for each BACKEND while doing completion.
 
@@ -472,7 +478,7 @@ This function is use when function `company-fuzzy--insert-candidate' is
 called.  It returns the current selection prefix to prevent completion
 completes in an odd way."
   (cl-case backend
-    (`company-files (funcall backend 'prefix))
+    (`company-files (company-fuzzy--valid-prefix backend))
     (t (company-fuzzy--backend-prefix backend 'match))))
 
 (defun company-fuzzy--backend-prefix-match (backend)
@@ -485,7 +491,7 @@ For instance, if there is a candidate function `buffer-file-name' and with
 current prefix `bfn'.  It will just return `bfn' because the current prefix
 does best describe the for this candidate."
   (cl-case backend
-    ((company-capf company-yasnippet) (funcall backend 'prefix))
+    ((company-capf company-yasnippet) (company-fuzzy--valid-prefix backend))
     (`company-files
      ;; NOTE: For `company-files', we will return the last section of the path
      ;; for the best match.
