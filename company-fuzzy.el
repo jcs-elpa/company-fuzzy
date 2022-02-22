@@ -244,7 +244,7 @@
   "Return the most generic prefix."
   (let ((start (company-fuzzy--symbol-start)))
     (ignore-errors
-      (string-trim (buffer-substring-no-properties start (point))))))
+      (string-trim (buffer-substring-no-properties (or start (point-min)) (point))))))
 
 (defun company-fuzzy--trigger-prefix-p ()
   "Check if current prefix a trigger prefix."
