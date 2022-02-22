@@ -671,7 +671,7 @@ Insert .* between each char."
   "Set the prefix just right before completion."
   (setq company-fuzzy--is-trigger-prefix-p nil
         company-fuzzy--prefix (or (ignore-errors (company-fuzzy--generic-prefix))
-                                  (ffap-file-at-point))))
+                                  (ffap-guesser))))
 
 (defun company-fuzzy-all-other-backends (command &optional arg &rest ignored)
   "Backend source for all other backend except this backend, COMMAND, ARG, IGNORED."
