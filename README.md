@@ -8,7 +8,7 @@
 [![CI](https://github.com/jcs-elpa/company-fuzzy/actions/workflows/test.yml/badge.svg)](https://github.com/jcs-elpa/company-fuzzy/actions/workflows/test.yml)
 
 <p align="center">
-  <img src="./etc/demo.gif"/>
+  <img src="./etc/demo.gif" width="60%"/>
 </p>
 
 Pure `elisp` fuzzy completion for `company-mode`. This plugin search through
