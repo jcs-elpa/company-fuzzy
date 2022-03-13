@@ -12,13 +12,14 @@ TEST-FILES := $(shell ls test/company-fuzzy-*.el)
 ci: clean build compile
 
 build:
-	EMACS=$(EMACS) $(CASK) install
-	EMACS=$(EMACS) $(CASK) build
+	$(CASK) install
+	$(CASK) build
 
 compile:
 	@echo "Compiling..."
 	@$(CASK) $(EMACS) -Q --batch \
 		-L . \
+		--eval '(setq byte-compile-error-on-warn t)' \
 		-f batch-byte-compile $(PKG-FILES)
 
 unix-test:
