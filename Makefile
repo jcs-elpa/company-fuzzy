@@ -13,6 +13,7 @@ ci: clean build compile
 
 build:
 	$(CASK) install
+	$(CASK) build
 
 compile:
 	@echo "Compiling..."
