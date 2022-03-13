@@ -19,7 +19,6 @@ compile:
 	@echo "Compiling..."
 	@$(CASK) $(EMACS) -Q --batch \
 		-L . \
-		--eval '(setq byte-compile-error-on-warn t)' \
 		-f batch-byte-compile $(PKG-FILES)
 
 unix-test:
