@@ -4,5 +4,9 @@
 
 (files "company-fuzzy.el")
 
+(depends-on "company")
+(depends-on "s")
+(depends-on "ht")
+
 (development
  (depends-on "ert-runner"))
