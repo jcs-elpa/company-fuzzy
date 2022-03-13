@@ -12,8 +12,8 @@ TEST-FILES := $(shell ls test/company-fuzzy-*.el)
 ci: clean build compile
 
 build:
-	$(CASK) install
-	$(CASK) build
+	EMACS=$(EMACS) $(CASK) install
+	EMACS=$(EMACS) $(CASK) build
 
 compile:
 	@echo "Compiling..."
