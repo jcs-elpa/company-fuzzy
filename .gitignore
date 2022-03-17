@@ -1,15 +1,17 @@
-# ignore these directories.
+# ignore these directories
 /.git
 /recipes
 /test
-company-fuzzy-pkg.el
 
-# ignore generated files.
+# ignore generated files
 *.elc
 
-# ignore I use to not ignore.
-Update_Log.txt
-TODO(jenchieh).txt
+# cask packages
+.cask/
+dist/
+
+# eask packages
+/.eask
 
 # ignore video
 /video
