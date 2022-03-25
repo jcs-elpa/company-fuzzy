@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
 
+## 1.4.1 (Unreleased)
+> Released N/A
+
+* Make local hash map object work! (e63df5f47d47f335c4cdbeb66b815ada2a7161a3)
+
 ## 1.4.0
 > Released Jan 27, 2022
 
