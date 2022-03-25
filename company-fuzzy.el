@@ -383,7 +383,6 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
 
 If optional argument FLIP is non-nil, reverse query and pattern order."
   (let ((scoring-table (ht-create)) scoring-keys)
-    (ht-clear scoring-table)
     (dolist (cand candidates)
       (when-let* ((prefix (company-fuzzy--backend-prefix-candidate cand 'match))
                   (scoring (ignore-errors
