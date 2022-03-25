@@ -186,6 +186,8 @@
 (defun company-fuzzy--enable ()
   "Record down all other backend to `company-fuzzy--backends'."
   (company-fuzzy--init)
+  (ht-clear company-fuzzy--ht-backends-candidates)
+  (ht-clear company-fuzzy--ht-history)
   (unless company-fuzzy--recorded-backends
     (setq company-fuzzy--recorded-backends company-backends
           company-fuzzy--backends (company-fuzzy--normalize-backend-list company-fuzzy--recorded-backends))
@@ -380,17 +382,17 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
   "Sort CANDIDATES with function call FNC.
 
 If optional argument FLIP is non-nil, reverse query and pattern order."
-  (let ((scoring-table (ht-create)) scoring-keys prefix scoring score)
+  (let ((scoring-table (ht-create)) scoring-keys)
+    (ht-clear scoring-table)
     (dolist (cand candidates)
-      (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match)
-            scoring (ignore-errors
-                      (if flip (funcall fnc prefix cand)
-                        (funcall fnc cand prefix)))
-            score (cond ((listp scoring) (nth 0 scoring))
-                        ((vectorp scoring) (aref scoring 0))
-                        ((numberp scoring) scoring)
-                        (t 0)))
-      (when score
+      (when-let* ((prefix (company-fuzzy--backend-prefix-candidate cand 'match))
+                  (scoring (ignore-errors
+                             (if flip (funcall fnc prefix cand)
+                               (funcall fnc cand prefix))))
+                  (score (cond ((listp scoring) (nth 0 scoring))
+                               ((vectorp scoring) (aref scoring 0))
+                               ((numberp scoring) scoring)
+                               (t 0))))
         (ht-set scoring-table score (push cand (ht-get scoring-table score)))))
     ;; Get all keys, and turn into a list.
     (ht-map (lambda (score-key _cands) (push score-key scoring-keys)) scoring-table)
@@ -515,7 +517,7 @@ function `buffer-file-name' as candidate.  But with this function will use a
 letter `b' instead of full prefix `bfn'.  So the BACKEND will return something
 that may be relavent to the first character `b'.
 
-P.S. Not all backend work this way."
+P.S.  Not all backend work this way."
   (cl-case backend
     (`company-files
      (when-let ((prefix (company-files 'prefix)))
