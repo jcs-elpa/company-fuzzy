@@ -186,6 +186,8 @@
 (defun company-fuzzy--enable ()
   "Record down all other backend to `company-fuzzy--backends'."
   (company-fuzzy--init)
+  ;; XXX Don't know why, but you need to clear it first to make local
+  ;; variables work!
   (ht-clear company-fuzzy--ht-backends-candidates)
   (ht-clear company-fuzzy--ht-history)
   (unless company-fuzzy--recorded-backends
