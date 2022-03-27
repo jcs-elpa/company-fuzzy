@@ -5,7 +5,7 @@
 (package-file "company-fuzzy.el")
 
 (depends-on "emacs" "26.1")
-(depends-on "company-mode")
+(depends-on "company")
 (depends-on "s")
 (depends-on "ht")
 
