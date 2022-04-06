@@ -1,8 +1,10 @@
-(source "melpa")
-
-(package "company-fuzzy" "1.4.0" "Fuzzy matching for `company-mode'")
+(package "company-fuzzy"
+         "1.4.0"
+         "Fuzzy matching for `company-mode'")
 
 (package-file "company-fuzzy.el")
+
+(source "melpa")
 
 (depends-on "emacs" "26.1")
 (depends-on "company")
