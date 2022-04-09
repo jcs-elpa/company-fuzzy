@@ -193,15 +193,15 @@
   (unless company-fuzzy--recorded-backends
     (setq company-fuzzy--recorded-backends company-backends
           company-fuzzy--backends (company-fuzzy--normalize-backend-list company-fuzzy--recorded-backends))
-    (setq-local company-backends '(company-fuzzy-all-other-backends)
-                company-transformers (append company-transformers '(company-fuzzy--sort-candidates)))
+    (setq-local company-backends '(company-fuzzy-all-other-backends))
+    (setq-local company-transformers (append company-transformers '(company-fuzzy--sort-candidates)))
     (advice-add 'company--insert-candidate :before #'company-fuzzy--insert-candidate)))
 
 (defun company-fuzzy--disable ()
   "Revert all other backend back to `company-backends'."
   (when company-fuzzy--recorded-backends
-    (setq-local company-backends company-fuzzy--recorded-backends
-                company-transformers (delq 'company-fuzzy--sort-candidates company-transformers))
+    (setq-local company-backends company-fuzzy--recorded-backends)
+    (setq-local company-transformers (delq 'company-fuzzy--sort-candidates company-transformers))
     (setq company-fuzzy--recorded-backends nil
           company-fuzzy--backends nil)
     (advice-remove 'company--insert-candidate #'company-fuzzy--insert-candidate)))
