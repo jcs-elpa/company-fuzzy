@@ -215,7 +215,7 @@ not be restored back to `company-backends`. Unless you change it with variable
 `company-fuzzy--recorded-backends` simutamiously so it can be restored back to
 your `company-backends`' true form.
 
-**Update:** You can now use the following functions to accomplish these tasks
+🔎 **UPDATE:** You can now use the following functions to accomplish these tasks
 in a much elegant way:
 
 ```elisp
