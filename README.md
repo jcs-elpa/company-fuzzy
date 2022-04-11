@@ -219,8 +219,8 @@ your `company-backends`' true form.
 in a much elegant way:
 
 ```elisp
-(company-fuzzy-backend-add 'company-capf)
-(company-fuzzy-backend-remove 'company-capf)
+(company-fuzzy-backend-add    'company-capf)
+(company-fuzzy-backend-remove 'company-yasnippets)
 ```
 
 #### 💫 Why do some candidates aren't showing up?
