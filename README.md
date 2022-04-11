@@ -227,7 +227,7 @@ in a much elegant way:
 
 This can cause by various reasons. The common causes are:
 
-##### 1. Cause by Semantic backend rules
+##### 🔎 1. Cause by Semantic backend rules
 
 `company-fuzzy` respects backends' rule. Meaning the candidates can be restricted
 by the backend you are using. For example,
@@ -243,7 +243,7 @@ function and not a variable. Another cause would be the candidate has been
 eliminated by the scoring engine (it scores lower than 0); hence it would
 not be shown.
 
-##### 2. Cause by `completion-styles`
+##### 🔎 2. Cause by `completion-styles`
 
 Candidates are first filtered by Emacs built-on completion engine. Try tweaking
 the variable `completion-styles` with other possible options.
