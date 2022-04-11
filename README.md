@@ -174,15 +174,15 @@ plugin work smoothly I would recommend these `company`'s variables to be set.
 ```
 
 *P.S.
-For the full configuration you can check out my configuration
+For the full configuration, you can check out my configuration
 [here](https://github.com/jcs-emacs/jcs-emacs/blob/21a886dea0da6ff6459f4e853f1637bd3681a4ae/lisp/jcs-plugin.el#L160-L166).*
 
 ## :question: FAQ
 
-#### :dizzy: Why is `company-fuzzy` not working?
+#### 💫 Why is `company-fuzzy` not working?
 
-Try log out the `company-backends` and make sure `company-fuzzy-all-other-backends`
-is the only backends in you list. If it's not, enable `company-fuzzy-mode` to swap
+Try to log out the `company-backends` and make sure `company-fuzzy-all-other-backends`
+is the only backend in your list. If it's not, enable `company-fuzzy-mode` to swap
 out all backends and hand it over to `company-fuzzy` to manage it.
 
 ```el
@@ -190,9 +190,10 @@ out all backends and hand it over to `company-fuzzy` to manage it.
 (message "%s" company-fuzzy--backends)  ; .. backends has been handed over to `company-fuzzy`
 ```
 
-#### :dizzy: When should I call `company-fuzzy-mode`?
+#### 💫 When should I call `company-fuzzy-mode`?
 
-You should call `company-fuzzy-mode` after you have done configure variable `company-backends`.
+You should call `company-fuzzy-mode` after you have done configured
+variable `company-backends`.
 
 ```el
 (setq company-backends '(company-capf company-yasnippets)  ; configure backends
@@ -202,7 +203,7 @@ You should call `company-fuzzy-mode` after you have done configure variable `com
 (company-fuzzy-mode 1)                                     ; enable fuzzy matching at the very last
 ```
 
-#### :dizzy: What if I want to add backends to specific `major-mode`?
+#### 💫 What if I want to add backends to specific `major-mode`?
 
 You can add any backends as long as you call `company-fuzzy-mode` at the very end
 of your mode hook. You can log out variable `company-fuzzy--backends` and see what
@@ -214,7 +215,19 @@ not be restored back to `company-backends`. Unless you change it with variable
 `company-fuzzy--recorded-backends` simutamiously so it can be restored back to
 your `company-backends`' true form.
 
-#### :dizzy: Why do some candidates not showing up?
+**Update:** You can now use the following functions to accomplish these tasks
+in a much elegant way:
+
+```elisp
+(company-fuzzy-backend-add 'company-capf)
+(company-fuzzy-backend-remove 'company-capf)
+```
+
+#### 💫 Why do some candidates aren't showing up?
+
+This can cause by various reasons. The common causes are:
+
+##### 1. Cause by Semantic backend rules
 
 `company-fuzzy` respects backends' rule. Meaning the candidates can be restricted
 by the backend you are using. For example,
@@ -225,9 +238,35 @@ by the backend you are using. For example,
 (my-vari.. )          ; but you are trying to use the variable as a function
 ```
 
-The `my-variable` would not show up since backend thinks it should be a function
-and not variable. Another cause would be the candidate has been eliminated by
-the scoring engine (it socres lower than 0), hence it would not be shown.
+The `my-variable` would not show up since the backend thinks it should be a
+function and not a variable. Another cause would be the candidate has been
+eliminated by the scoring engine (it scores lower than 0); hence it would
+not be shown.
+
+##### 2. Cause by `completion-styles`
+
+Candidates are first filtered by Emacs built-on completion engine. Try tweaking
+the variable `completion-styles` with other possible options.
+
+```elisp
+(setq completion-styles '(partial-completion))
+```
+
+Or hook up with the company's hooks:
+
+```elisp
+(add-hook 'company-completion-started-hook
+          (lambda ()
+            (setq completion-styles '(partial-completion))))
+
+(add-hook 'company-after-completion-hook
+          (lambda ()
+            ;; Revert `completion-styles' to original values
+            (setq completion-styles ..)))
+```
+
+See [Completion Alternatives](https://www.gnu.org/software/emacs/manual/html_node/emacs/Completion-Styles.html)
+for more information.
 
 ## Contribute
 
@@ -236,6 +275,6 @@ the scoring engine (it socres lower than 0), hence it would not be shown.
 [![Donate on paypal](https://img.shields.io/badge/paypal-donate-1?logo=paypal&color=blue)](https://www.paypal.me/jcs090218)
 
 If you would like to contribute to this project, you may either
-clone and make pull requests to this repository. Or you can
-clone the project and establish your own branch of this tool.
+clone or make pull requests to this repository. Or you can
+clone the project and establish your branch of this tool.
 Any methods are welcome!
