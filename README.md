@@ -275,7 +275,13 @@ Best way to debug this, is to feed `query` and `candidate` to the scoring
 functions. The following example uses `flx`:
 
 ```elisp
-(flx-score "win-sys" "window-system")  ; return score and it's match data
+(flx-score "window-system" "win-sys")  ; return score and it's match data
+```
+
+Or `liquidmetal-score`:
+
+```elisp
+(liquidmetal-score "window-system" "win-sys")  ; return score
 ```
 
 ## Contribute
