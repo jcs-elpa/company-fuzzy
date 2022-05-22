@@ -239,9 +239,7 @@ by the backend you are using. For example,
 ```
 
 The `my-variable` would not show up since the backend thinks it should be a
-function and not a variable. Another cause would be the candidate has been
-eliminated by the scoring engine (it scores lower than 0); hence it would
-not be shown.
+function and not a variable.
 
 ##### 🔎 2. Cause by `completion-styles`
 
@@ -267,6 +265,18 @@ Or hook up with the company's hooks:
 
 See [Completion Alternatives](https://www.gnu.org/software/emacs/manual/html_node/emacs/Completion-Styles.html)
 for more information.
+
+##### 🔎 3. Scores lower than 0
+
+Another cause would be the candidate has been eliminated by the scoring engine
+(it scores lower than 0); hence it would not be shown.
+
+Best way to debug this, is to feed `query` and `candidate` to the scoring
+functions. The following example uses `flx`:
+
+```elisp
+(flx-score "win-sys" "window-system")  ; return score and it's match data
+```
 
 ## Contribute
 
