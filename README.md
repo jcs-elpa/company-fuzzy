@@ -278,7 +278,7 @@ functions. The following example uses `flx`:
 (flx-score "window-system" "win-sys")  ; return score and it's match data
 ```
 
-Or `liquidmetal-score`:
+Another example using the `liquidmetal`:
 
 ```elisp
 (liquidmetal-score "window-system" "win-sys")  ; return score
