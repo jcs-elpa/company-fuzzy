@@ -3,8 +3,6 @@ SHELL := /usr/bin/env bash
 EMACS ?= emacs
 EASK ?= eask
 
-TEST-FILES := $(shell ls test/company-fuzzy-*.el)
-
 .PHONY: clean checkdoc lint package install compile test
 
 ci: clean package install compile
@@ -23,7 +21,7 @@ compile:
 
 test:
 	@echo "Testing..."
-	$(EASK) exec ert-runner -L . $(LOAD-TEST-FILES) -t '!no-win' -t '!org'
+	$(EASK) ert ./test/*.el
 
 clean:
 	$(EASK) clean-all
