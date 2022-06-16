@@ -4,11 +4,10 @@
 ;; Created date 2019-08-01 16:54:34
 
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
-;; Description: Fuzzy matching for `company-mode'.
-;; Keyword: auto auto-complete complete fuzzy matching
+;; URL: https://github.com/jcs-elpa/company-fuzzy
 ;; Version: 1.4.0
 ;; Package-Requires: ((emacs "26.1") (company "0.8.12") (s "1.12.0") (ht "2.0"))
-;; URL: https://github.com/jcs-elpa/company-fuzzy
+;; Keywords: auto auto-complete complete fuzzy matching
 
 ;; This file is NOT part of GNU Emacs.
 

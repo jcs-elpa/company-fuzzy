@@ -2,6 +2,9 @@
          "1.4.0"
          "Fuzzy matching for `company-mode'")
 
+(website-url "https://github.com/jcs-elpa/company-fuzzy")
+(keywords "auto" "auto-complete" "complete" "fuzzy" "matching")
+
 (package-file "company-fuzzy.el")
 
 (source "melpa")
