@@ -3,7 +3,7 @@
          "Fuzzy matching for `company-mode'")
 
 (website-url "https://github.com/jcs-elpa/company-fuzzy")
-(keywords "auto" "auto-complete" "complete" "fuzzy" "matching")
+(keywords "matching" "auto-complete" "complete" "fuzzy")
 
 (package-file "company-fuzzy.el")
 
