@@ -123,9 +123,6 @@
 (defvar-local company-fuzzy--ht-backends-candidates (ht-create)
   "Store candidates by backend as id.")
 
-(defvar-local company-fuzzy--ht-history (ht-create)
-  "Store list data of history data '(backend . candidates)'.")
-
 ;;
 ;; (@* "External" )
 ;;
@@ -182,7 +179,6 @@
   ;; XXX Don't know why, but you need to clear it first to make local
   ;; variables work!
   (ht-clear company-fuzzy--ht-backends-candidates)
-  (ht-clear company-fuzzy--ht-history)
   (unless company-fuzzy--recorded-backends
     (setq company-fuzzy--recorded-backends company-backends
           company-fuzzy--backends (company-fuzzy--normalize-backend-list company-fuzzy--recorded-backends))
