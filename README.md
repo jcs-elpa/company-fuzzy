@@ -39,7 +39,6 @@ hence all possible candidates will be shown in the auto-complete menu.
   :init
   (setq company-fuzzy-sorting-backend 'flx
         company-fuzzy-prefix-on-top nil
-        company-fuzzy-history-backends '(company-yasnippet)
         company-fuzzy-trigger-symbols '("." "->" "<" "\"" "'" "@")))
 ```
 
