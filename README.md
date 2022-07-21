@@ -39,7 +39,6 @@ hence all possible candidates will be shown in the auto-complete menu.
   :init
   (setq company-fuzzy-sorting-backend 'flx
         company-fuzzy-prefix-on-top nil
-        company-fuzzy-history-backends '(company-yasnippet)
         company-fuzzy-trigger-symbols '("." "->" "<" "\"" "'" "@")))
 ```
 
@@ -138,19 +137,6 @@ Since [company](https://github.com/company-mode/company-mode)
 granted most control to users, every company backend developer
 has different method of implementing company backend. It is hard
 to manage all backends to one by varies of rules.
-
-### ✒️ History
-
-Some backends doesn't allow me to get the list of candidates by passing the
-possible prefix; hence I have created this type of special scenario. If you
-encountered a backend that sometimes does fuzzy, but sometimes does not;
-try add the backend to `company-fuzzy-history-backends` like the following
-code snippet. `'company-yasnippet` is one of the backend that does not
-allow me to do that.
-
-```el
-(add-to-list 'company-fuzzy-history-backends 'company-yasnippet)
-```
 
 ## Recommended Settings
 

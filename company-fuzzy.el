@@ -93,11 +93,6 @@
   :type 'list
   :group 'company-fuzzy)
 
-(defcustom company-fuzzy-history-backends '(company-yasnippet)
-  "List of backends that kept the history to do fuzzy sorting."
-  :type 'list
-  :group 'company-fuzzy)
-
 (defcustom company-fuzzy-trigger-symbols '("." "->")
   "List of symbols that allow trigger company when there is no prefix."
   :type 'list
@@ -128,15 +123,11 @@
 (defvar-local company-fuzzy--ht-backends-candidates (ht-create)
   "Store candidates by backend as id.")
 
-(defvar-local company-fuzzy--ht-history (ht-create)
-  "Store list data of history data '(backend . candidates)'.")
-
 ;;
 ;; (@* "External" )
 ;;
 
 (declare-function company-files "ext:company-files.el")
-(declare-function company-yasnippet "ext:company-yasnippet.el")
 
 (declare-function flex-score "ext:flex.el")
 (declare-function flx-score "ext:flx.el")
@@ -188,13 +179,13 @@
   ;; XXX Don't know why, but you need to clear it first to make local
   ;; variables work!
   (ht-clear company-fuzzy--ht-backends-candidates)
-  (ht-clear company-fuzzy--ht-history)
   (unless company-fuzzy--recorded-backends
     (setq company-fuzzy--recorded-backends company-backends
           company-fuzzy--backends (company-fuzzy--normalize-backend-list company-fuzzy--recorded-backends))
     (setq-local company-backends '(company-fuzzy-all-other-backends))
     (setq-local company-transformers (append company-transformers '(company-fuzzy--sort-candidates)))
-    (advice-add 'company--insert-candidate :before #'company-fuzzy--insert-candidate)))
+    (advice-add 'company--insert-candidate :before #'company-fuzzy--insert-candidate)
+    (advice-add 'company-yasnippet--completions-for-prefix :around #'company-fuzzy-yasnippet--completions-for-prefix)))
 
 (defun company-fuzzy--disable ()
   "Revert all other backend back to `company-backends'."
@@ -203,7 +194,8 @@
     (setq-local company-transformers (delq 'company-fuzzy--sort-candidates company-transformers))
     (setq company-fuzzy--recorded-backends nil
           company-fuzzy--backends nil)
-    (advice-remove 'company--insert-candidate #'company-fuzzy--insert-candidate)))
+    (advice-remove 'company--insert-candidate #'company-fuzzy--insert-candidate)
+    (advice-remove 'company-yasnippet--completions-for-prefix #'company-fuzzy-yasnippet--completions-for-prefix)))
 
 ;;;###autoload
 (define-minor-mode company-fuzzy-mode
@@ -493,7 +485,7 @@ For instance, if there is a candidate function `buffer-file-name' and with
 current prefix `bfn'.  It will just return `bfn' because the current prefix
 does best describe the for this candidate."
   (cl-case backend
-    ((company-capf company-yasnippet) (company-fuzzy--valid-prefix backend))
+    ((company-capf) (company-fuzzy--valid-prefix backend))
     (`company-files
      ;; NOTE: For `company-files', we will return the last section of the path
      ;; for the best match.
@@ -529,7 +521,6 @@ P.S.  Not all backend work this way."
            (setq new-prefix
                  (substring prefix 0 (- (length prefix) (length last)))))
          new-prefix)))
-    (`company-yasnippet (company-yasnippet 'prefix))
     (t (ignore-errors (substring company-fuzzy--prefix 0 1)))))
 
 (defun company-fuzzy--backend-prefix-candidate (cand type)
@@ -633,15 +624,6 @@ Insert .* between each char."
                (company-fuzzy--valid-candidates-p temp-candidates)
                prefix-com)
       (setq temp-candidates (company-fuzzy--match-string prefix-com temp-candidates)))
-    ;; NOTE: History work.
-    ;;
-    ;; Here we check if BACKEND a history type of backend. And if it does; then
-    ;; it will ensure considering the history candidates to the new candidates.
-    (when (memq backend company-fuzzy-history-backends)
-      (let ((cands-history (ht-get company-fuzzy--ht-history backend)))
-        (setq temp-candidates (append cands-history temp-candidates))
-        (delete-dups temp-candidates)
-        (ht-set company-fuzzy--ht-history backend temp-candidates)))
     ;; NOTE: Made the final completion.
     (company-fuzzy--collect-candidates backend temp-candidates)))
 
@@ -718,6 +700,21 @@ Insert .* between each char."
     (make-local-variable 'company-backends)
     (setq company-backends (cl-remove backend company-backends)))
   (company-fuzzy--backend-organize))
+
+;;
+;; (@* "Plugins" )
+;;
+
+(defun company-fuzzy-yasnippet--completions-for-prefix (fnc &rest args)
+  "Wrap around `company-yasnippet--completions-for-prefix' function in order to
+get all possible candidates.
+
+Arguments FNC and ARGS are used to apply original operations."
+  (when company-fuzzy-mode
+    ;; `prefix' came from `company-fuzzy--backend-prefix-get', so we simply
+    ;; replace set `key-prefix' to `prefix'.
+    (setf (nth 1 args) (nth 0 args)))
+  (apply fnc args))
 
 (provide 'company-fuzzy)
 ;;; company-fuzzy.el ends here
