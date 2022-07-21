@@ -9,6 +9,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 > Released N/A
 
 * Make local hash map object work! (e63df5f47d47f335c4cdbeb66b815ada2a7161a3)
+* Fix long lasting `company-yasnippet` bug (#30)
 
 ## 1.4.0
 > Released Jan 27, 2022
