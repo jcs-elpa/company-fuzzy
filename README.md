@@ -291,7 +291,8 @@ similar to
 (add-hook 'markdown-mode-hook (lambda () (modify-syntax-entry ?: "w"))
 ```
 
-See related issue #22 (`ruby-mode` with `@` symbol).
+See related issue [#22](https://github.com/jcs-elpa/company-fuzzy/issues/22)
+(`ruby-mode` with `@` symbol).
 
 ## Contribute
 
