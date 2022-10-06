@@ -163,7 +163,7 @@ plugin work smoothly I would recommend these `company`'s variables to be set.
 For the full configuration, you can check out my configuration
 [here](https://github.com/jcs-emacs/jcs-emacs/blob/21a886dea0da6ff6459f4e853f1637bd3681a4ae/lisp/jcs-plugin.el#L160-L166).*
 
-## :question: FAQ
+## ❓ FAQ
 
 #### 💫 Why is `company-fuzzy` not working?
 
@@ -269,6 +269,29 @@ Another example using the `liquidmetal`:
 ```elisp
 (liquidmetal-score "window-system" "win-sys")  ; return score
 ```
+
+#### 💫 Why are some variable not respected with special symbols? (`@`, `:`, etc)
+
+`company-fuzzy` detects prefix depends on the [Syntax Table](https://www.emacswiki.org/emacs/EmacsSyntaxTable)
+. And those special symbols normally doesn't get treated as a whole prefix,
+hence you should see the completion get inserted incorrectly,
+
+```markdown
+<!-- Try to complete `link` emoji -->
+:lin
+
+<!-- WRONG, the symbol `:` colon doesn't count as a prefix -->
+::link:
+```
+
+How to solve this? You should configure your syntax table by doing something
+similar to
+
+```elisp
+(add-hook 'markdown-mode-hook (lambda () (modify-syntax-entry ?: "w"))
+```
+
+See related issue #22 (`ruby-mode` with `@` symbol).
 
 ## Contribute
 
