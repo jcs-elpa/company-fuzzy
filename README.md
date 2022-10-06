@@ -270,7 +270,7 @@ Another example using the `liquidmetal`:
 (liquidmetal-score "window-system" "win-sys")  ; return score
 ```
 
-#### 💫 Why are some variable not respected with special symbols? (`@`, `:`, etc)
+#### 💫 Why are some variables not respected with special symbols? (`@`, `:`, etc)
 
 `company-fuzzy` detects prefix depends on the [Syntax Table](https://www.emacswiki.org/emacs/EmacsSyntaxTable)
 . And those special symbols normally doesn't get treated as a whole prefix,
