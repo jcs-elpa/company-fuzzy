@@ -277,7 +277,7 @@ Another example using the `liquidmetal`:
 hence you should see the completion get inserted incorrectly,
 
 ```markdown
-<!-- Try to complete `link` emoji -->
+<!-- Try to complete `:link:` emoji -->
 :lin
 
 <!-- WRONG, the symbol `:` colon doesn't count as a prefix -->
