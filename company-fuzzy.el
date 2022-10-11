@@ -490,8 +490,11 @@ does best describe the for this candidate."
      ;; for the best match.
      ;;
      ;; Example, if I have path `/path/to/dir'; then it shall return `dir'.
-     (when-let ((prefix (funcall backend 'prefix)))
-       (file-name-nondirectory prefix)))
+     (when-let* ((prefix (funcall backend 'prefix))
+                 (splitted (split-string prefix "/" t))
+                 (len-splitted (length splitted))
+                 (last (nth (1- len-splitted) splitted)))
+       last))
     (t company-fuzzy--prefix)))
 
 (defun company-fuzzy--backend-prefix-get (backend)
