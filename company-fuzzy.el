@@ -127,8 +127,6 @@
 ;; (@* "External" )
 ;;
 
-(declare-function company-files "ext:company-files.el")
-
 (declare-function flex-score "ext:flex.el")
 (declare-function flx-score "ext:flx.el")
 (declare-function flx-rs-score "ext:flx-rs.el")
@@ -199,13 +197,13 @@
 
 ;;;###autoload
 (define-minor-mode company-fuzzy-mode
-  "Minor mode 'company-fuzzy-mode'."
+  "Minor mode `company-fuzzy-mode'."
   :lighter " ComFuz"
   :group company-fuzzy
   (if company-fuzzy-mode (company-fuzzy--enable) (company-fuzzy--disable)))
 
 (defun company-fuzzy-turn-on-company-fuzzy-mode ()
-  "Turn on the 'company-fuzzy-mode'."
+  "Turn on the `company-fuzzy-mode'."
   (company-fuzzy-mode 1))
 
 ;;;###autoload
@@ -403,39 +401,36 @@ If optional argument FLIP is non-nil, reverse query and pattern order."
   ;; IMPORTANT: Since the command `candidates' will change by `company-mode',
   ;; we manually set the candidates here so we get can consistent result.
   (setq candidates (company-fuzzy--ht-all-candidates))
+  ;; Don't score when it start fresh, e.g. completing a function name in Java
+  ;; with the . (dot) symbol
   (unless company-fuzzy--is-trigger-prefix-p
-    (cl-case company-fuzzy-sorting-backend
-      (`none candidates)
-      (`alphabetic (setq candidates (sort candidates #'string-lessp)))
-      (`flex
-       (setq candidates
-             (company-fuzzy--sort-candidates-by-function candidates #'flex-score)))
-      (`flx
-       (setq candidates
-             (company-fuzzy--sort-candidates-by-function candidates #'flx-score)))
-      (`flx-rs
-       (setq candidates
-             (company-fuzzy--sort-candidates-by-function candidates #'flx-rs-score)))
-      (`flxy
-       (setq candidates
-             (company-fuzzy--sort-candidates-by-function candidates #'flxy-score)))
-      ((or fuz-skim fuz-clangd)
-       (let ((func (if (eq company-fuzzy-sorting-backend 'fuz-skim)
-                       'fuz-calc-score-skim
-                     'fuz-calc-score-clangd)))
-         (setq candidates
-               (company-fuzzy--sort-candidates-by-function candidates func t))))
-      ((or fuz-bin-skim fuz-bin-clangd)
-       (let ((func (if (eq company-fuzzy-sorting-backend 'fuz-bin-skim)
-                       'fuz-bin-score-skim
-                     'fuz-bin-score-clangd)))
-         (setq candidates
-               (company-fuzzy--sort-candidates-by-function candidates func t))))
-      (`liquidmetal
-       (setq candidates
-             (company-fuzzy--sort-candidates-by-function candidates #'liquidmetal-score)))
-      (`sublime-fuzzy
-       (setq candidates
+    (setq candidates
+          (cl-case company-fuzzy-sorting-backend
+            (`none candidates)
+            (`alphabetic (sort candidates #'string-lessp))
+            (`flex
+             (company-fuzzy--sort-candidates-by-function candidates #'flex-score))
+            (`flx
+             (company-fuzzy--sort-candidates-by-function candidates #'flx-score))
+            (`flx-rs
+             (company-fuzzy--sort-candidates-by-function candidates #'flx-rs-score))
+            (`flxy
+             (company-fuzzy--sort-candidates-by-function candidates #'flxy-score))
+            ((or fuz-skim fuz-clangd)
+             (company-fuzzy--sort-candidates-by-function
+              candidates (if (eq company-fuzzy-sorting-backend 'fuz-skim)
+                             #'fuz-calc-score-skim
+                           #'fuz-calc-score-clangd)
+              t))
+            ((or fuz-bin-skim fuz-bin-clangd)
+             (company-fuzzy--sort-candidates-by-function
+              candidates (if (eq company-fuzzy-sorting-backend 'fuz-bin-skim)
+                             'fuz-bin-score-skim
+                           'fuz-bin-score-clangd)
+              t))
+            (`liquidmetal
+             (company-fuzzy--sort-candidates-by-function candidates #'liquidmetal-score))
+            (`sublime-fuzzy
              (company-fuzzy--sort-candidates-by-function candidates #'sublime-fuzzy-score t))))
     (when company-fuzzy-prefix-on-top
       (setq candidates (company-fuzzy--sort-prefix-on-top candidates)))
@@ -486,12 +481,16 @@ current prefix `bfn'.  It will just return `bfn' because the current prefix
 does best describe the for this candidate."
   (cl-case backend
     ((company-capf) (company-fuzzy--valid-prefix backend))
+    (`company-c-headers
+     (when-let ((prefix (funcall backend 'prefix)))
+       ;; Skip the first < or " symbol
+       (substring prefix 1 (length prefix))))
     (`company-files
      ;; NOTE: For `company-files', we will return the last section of the path
      ;; for the best match.
      ;;
      ;; Example, if I have path `/path/to/dir'; then it shall return `dir'.
-     (when-let* ((prefix (company-files 'prefix))
+     (when-let* ((prefix (funcall backend 'prefix))
                  (splitted (split-string prefix "/" t))
                  (len-splitted (length splitted))
                  (last (nth (1- len-splitted) splitted)))
@@ -511,8 +510,15 @@ that may be relavent to the first character `b'.
 
 P.S.  Not all backend work this way."
   (cl-case backend
+    (`company-c-headers
+     ;; Ignore trigger symbol rule. Even the user have `dot' symbol as one of
+     ;; the triggeration symbol, we will still able to complete through the
+     ;; candidate string.
+     (setq company-fuzzy--is-trigger-prefix-p nil)
+     ;; Skip the < or " symbol for the first character
+     (ignore-errors (substring (funcall backend 'prefix) 1 2)))
     (`company-files
-     (when-let ((prefix (company-files 'prefix)))
+     (when-let ((prefix (funcall backend 'prefix)))
        (let* ((splitted (split-string prefix "/" t))
               (len-splitted (length splitted))
               (last (nth (1- len-splitted) splitted))
