@@ -98,6 +98,14 @@
   :type 'list
   :group 'company-fuzzy)
 
+(defcustom company-fuzzy-syntax-alist
+  '((?. . "w")
+    (?: . "w")
+    (?@ . "w"))
+  "Modified syntax table temporarily for getting the correct prefix."
+  :type 'alist
+  :group 'company-fuzzy)
+
 (defcustom company-fuzzy-completion-separator "[ \t\r\n]\\|\\_<\\|\\_>"
   "Use to identify the completion unit."
   :type 'string
@@ -659,9 +667,14 @@ Insert .* between each char."
 
 (defun company-fuzzy--get-prefix ()
   "Set the prefix just right before completion."
-  (setq company-fuzzy--is-trigger-prefix-p nil
-        company-fuzzy--prefix (or (ignore-errors (company-fuzzy--generic-prefix))
-                                  (ffap-guesser))))
+  (with-syntax-table (copy-syntax-table)
+    (dolist (entry company-fuzzy-syntax-alist)
+      (if (consp entry)
+          (modify-syntax-entry (car entry) (cdr entry))
+        (modify-syntax-entry entry "w")))
+    (setq company-fuzzy--is-trigger-prefix-p nil
+          company-fuzzy--prefix (or (ignore-errors (company-fuzzy--generic-prefix))
+                                    (ffap-guesser)))))
 
 (defun company-fuzzy-all-other-backends (command &optional arg &rest ignored)
   "Backend source for all other backend except this backend, COMMAND, ARG, IGNORED."
