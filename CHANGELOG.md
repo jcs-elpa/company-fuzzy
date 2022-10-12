@@ -11,6 +11,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 * Make local hash map object work! (e63df5f47d47f335c4cdbeb66b815ada2a7161a3)
 * Fix long lasting `company-yasnippet` bug (#30)
 * Compatible to backend `company-c-headers` (#31)
+* Add use of furthest prefix (#33)
 
 ## 1.4.0
 > Released Jan 27, 2022
