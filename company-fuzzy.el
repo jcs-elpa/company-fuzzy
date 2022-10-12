@@ -233,6 +233,17 @@
       (re-search-backward company-fuzzy-completion-separator)
       (point))))
 
+(defun company-fuzzy--furthest-prefix ()
+  "Return the possible furthest (greatest length) prefix."
+  (let ((final-len 0) final-prefix)
+    (dolist (backend company-fuzzy--backends)
+      (when-let* ((prefix (ignore-errors (funcall backend 'prefix)))
+                  (len (length prefix))
+                  ((< final-len len)))
+        (setq final-prefix prefix
+              final-len len)))
+    final-prefix))
+
 (defun company-fuzzy--generic-prefix ()
   "Return the most generic prefix."
   (let ((start (company-fuzzy--symbol-start)))
@@ -511,10 +522,6 @@ that may be relavent to the first character `b'.
 P.S.  Not all backend work this way."
   (cl-case backend
     (`company-c-headers
-     ;; Ignore trigger symbol rule. Even the user have `dot' symbol as one of
-     ;; the triggeration symbol, we will still able to complete through the
-     ;; candidate string.
-     (setq company-fuzzy--is-trigger-prefix-p nil)
      ;; Skip the < or " symbol for the first character
      (ignore-errors (substring (funcall backend 'prefix) 1 2)))
     (`company-files
@@ -660,7 +667,8 @@ Insert .* between each char."
 (defun company-fuzzy--get-prefix ()
   "Set the prefix just right before completion."
   (setq company-fuzzy--is-trigger-prefix-p nil
-        company-fuzzy--prefix (or (ignore-errors (company-fuzzy--generic-prefix))
+        company-fuzzy--prefix (or (ignore-errors (company-fuzzy--furthest-prefix))
+                                  (ignore-errors (company-fuzzy--generic-prefix))
                                   (ffap-guesser))))
 
 (defun company-fuzzy-all-other-backends (command &optional arg &rest ignored)
