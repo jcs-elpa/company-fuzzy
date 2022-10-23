@@ -12,6 +12,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 * Fix long lasting `company-yasnippet` bug (#30)
 * Compatible to backend `company-c-headers` (#31)
 * Add use of furthest prefix (#33)
+* Call prefix backend to respect their rules (0a814694a5f6ed12926de07f29d04850789f19e2)
 
 ## 1.4.0
 > Released Jan 27, 2022
