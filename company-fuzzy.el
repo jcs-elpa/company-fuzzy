@@ -111,6 +111,9 @@
 (defvar-local company-fuzzy--prefix ""
   "Generic prefix.")
 
+(defvar-local company-fuzzy--prefix-first ""
+  "Store generic prefix's first character for caching.")
+
 (defvar-local company-fuzzy--backends nil
   "Company fuzzy backends we are going to use.")
 
@@ -540,8 +543,10 @@ P.S.  Not all backend work this way."
            (setq new-prefix
                  (substring prefix 0 (- (length prefix) (length last)))))
          new-prefix)))
-    (t (when (ht-get company-fuzzy--prefixes backend)
-         (ignore-errors (substring company-fuzzy--prefix 0 1))))))
+    (t
+     (when (or (memq backend company-fuzzy-passthrough-backends)
+               (ht-get company-fuzzy--prefixes backend))
+       company-fuzzy--prefix-first))))
 
 (defun company-fuzzy--backend-prefix-candidate (cand type)
   "Get the backend prefix by CAND and TYPE."
@@ -676,7 +681,8 @@ Insert .* between each char."
   (setq company-fuzzy--is-trigger-prefix-p nil
         company-fuzzy--prefix (or (ignore-errors (company-fuzzy--furthest-prefix))
                                   (ignore-errors (company-fuzzy--generic-prefix))
-                                  (ffap-guesser))))
+                                  (ffap-guesser))
+        company-fuzzy--prefix-first (ignore-errors (substring company-fuzzy--prefix 0 1))))
 
 (defun company-fuzzy-all-other-backends (command &optional arg &rest ignored)
   "Backend source for all other backend except this backend, COMMAND, ARG, IGNORED."
