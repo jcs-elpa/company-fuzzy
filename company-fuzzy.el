@@ -245,10 +245,10 @@
   (ht-clear company-fuzzy--prefixes)
   (let ((final-len 0) final-prefix)
     (dolist (backend company-fuzzy--backends)
-      (when-let* ((prefix (ignore-errors (funcall backend 'prefix)))
-                  (len (length prefix)))
+      (when-let ((prefix (ignore-errors (funcall backend 'prefix))))
         (ht-set company-fuzzy--prefixes backend prefix)
-        (when (< final-len len)
+        (when-let* ((len (length prefix))
+                    ((< final-len len)))
           (setq final-prefix prefix
                 final-len len))))
     final-prefix))
@@ -544,8 +544,7 @@ P.S.  Not all backend work this way."
                  (substring prefix 0 (- (length prefix) (length last)))))
          new-prefix)))
     (t
-     (when (or (memq backend company-fuzzy-passthrough-backends)
-               (ht-get company-fuzzy--prefixes backend))
+     (when (ht-get company-fuzzy--prefixes backend)
        company-fuzzy--prefix-first))))
 
 (defun company-fuzzy--backend-prefix-candidate (cand type)
@@ -682,7 +681,8 @@ Insert .* between each char."
         company-fuzzy--prefix (or (ignore-errors (company-fuzzy--furthest-prefix))
                                   (ignore-errors (company-fuzzy--generic-prefix))
                                   (ffap-guesser))
-        company-fuzzy--prefix-first (ignore-errors (substring company-fuzzy--prefix 0 1))))
+        company-fuzzy--prefix-first (ignore-errors (substring company-fuzzy--prefix 0 1)))
+  company-fuzzy--prefix)  ; make sure return it
 
 (defun company-fuzzy-all-other-backends (command &optional arg &rest ignored)
   "Backend source for all other backend except this backend, COMMAND, ARG, IGNORED."
