@@ -190,7 +190,9 @@
     (setq-local company-backends '(company-fuzzy-all-other-backends))
     (setq-local company-transformers (append company-transformers '(company-fuzzy--sort-candidates)))
     (advice-add 'company--insert-candidate :before #'company-fuzzy--insert-candidate)
-    (advice-add 'company-yasnippet--completions-for-prefix :around #'company-fuzzy-yasnippet--completions-for-prefix)))
+    (advice-add 'company-yasnippet--completions-for-prefix :around #'company-fuzzy-yasnippet--completions-for-prefix))
+  (add-hook 'lsp-managed-mode-hook #'company-fuzzy--lsp-managed-mode nil t)
+  (add-hook 'eglot-managed-mode-hook #'company-fuzzy--lsp-managed-mode nil t))
 
 (defun company-fuzzy--disable ()
   "Revert all other backend back to `company-backends'."
@@ -200,7 +202,9 @@
     (setq company-fuzzy--recorded-backends nil
           company-fuzzy--backends nil)
     (advice-remove 'company--insert-candidate #'company-fuzzy--insert-candidate)
-    (advice-remove 'company-yasnippet--completions-for-prefix #'company-fuzzy-yasnippet--completions-for-prefix)))
+    (advice-remove 'company-yasnippet--completions-for-prefix #'company-fuzzy-yasnippet--completions-for-prefix))
+  (remove-hook 'lsp-managed-mode-hook #'company-fuzzy--lsp-managed-mode t)
+  (remove-hook 'eglot-managed-mode-hook #'company-fuzzy--lsp-managed-mode t))
 
 ;;;###autoload
 (define-minor-mode company-fuzzy-mode
@@ -611,7 +615,8 @@ Insert .* between each char."
   (ht-clear company-fuzzy--candidates)  ; Clean up
   (setq company-fuzzy--is-trigger-prefix-p (company-fuzzy--trigger-prefix-p))
   (dolist (backend company-fuzzy--backends)
-    (if (memq backend company-fuzzy-passthrough-backends)
+    (if (or (company-fuzzy--lsp-passthrough backend)
+            (memq backend company-fuzzy-passthrough-backends))
         (company-fuzzy--candidates-from-passthrough-backend backend)
       (company-fuzzy--candidates-from-backend backend)))
   ;; Since we insert the candidates before sorting event, see function
@@ -731,6 +736,23 @@ Insert .* between each char."
 ;;
 ;; (@* "Plugins" )
 ;;
+
+(defun company-fuzzy--lsp-connected-p ()
+  "Return non-nil if lsp is connected."
+  (or (bound-and-true-p lsp-managed-mode)
+      (bound-and-true-p eglot--managed-mode)))
+
+(defun company-fuzzy--lsp-managed-mode (&rest _)
+  "Hook run after LSP is enabled."
+  (when (company-fuzzy--lsp-connected-p)
+    ;; No need to check for `company-fuzzy-mode' is on or not since this
+    ;; is hook only added when `company-fuzzy-mode' is on.
+    (setq-local company-backends '(company-fuzzy-all-other-backends))))
+
+(defun company-fuzzy--lsp-passthrough (backend)
+  "Respect `capf' BACKEND when LSP is available."
+  (when (memq backend '(company-capf))
+    (company-fuzzy--lsp-connected-p)))
 
 (defun company-fuzzy-yasnippet--completions-for-prefix (fnc &rest args)
   "Wrap around `company-yasnippet--completions-for-prefix' function in order to
