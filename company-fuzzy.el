@@ -158,10 +158,6 @@
 ;; (@* "Mode" )
 ;;
 
-(defun company-fuzzy--funcall-fboundp (fnc &rest args)
-  "Call FNC with ARGS if exists."
-  (when (fboundp fnc) (if args (funcall fnc args) (funcall fnc))))
-
 (defun company-fuzzy--init ()
   "Initialize all sorting backends."
   (cl-case company-fuzzy-sorting-backend
@@ -354,8 +350,9 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
   "Prerender color with STR and flag ANNOTATION-P."
   (unless annotation-p
     (let* ((str-len (length str))
-           (prefix (or (company-fuzzy--backend-prefix-candidate str 'match)
-                       ""))
+           (prefix (company-fuzzy--backend-prefix-candidate str 'match))
+           (prefix (if (stringp prefix)  ; this will handle 'anything symbol type
+                       prefix ""))
            (selection (or company-selection 0))
            (cur-selection (nth selection company-candidates))
            (splitted-section (remove "" (split-string str " ")))
@@ -400,9 +397,10 @@ If optional argument FLIP is non-nil, reverse query and pattern order."
   (let ((scoring-table (ht-create)) scoring-keys)
     (dolist (cand candidates)
       (when-let* ((prefix (company-fuzzy--backend-prefix-candidate cand 'match))
-                  (scoring (ignore-errors
-                             (if flip (funcall fnc prefix cand)
-                               (funcall fnc cand prefix))))
+                  (scoring (or (equal prefix 'anything)
+                               (ignore-errors
+                                 (if flip (funcall fnc prefix cand)
+                                   (funcall fnc cand prefix)))))
                   (score (cond ((listp scoring) (nth 0 scoring))
                                ((vectorp scoring) (aref scoring 0))
                                ((numberp scoring) scoring)
@@ -491,7 +489,18 @@ This function is use when function `company-fuzzy--insert-candidate' is
 called.  It returns the current selection prefix to prevent completion
 completes in an odd way."
   (cl-case backend
+    (`company-paths (company-fuzzy--valid-prefix backend))
+    (t (company-fuzzy--backend-prefix backend 'filter))))
+
+(defun company-fuzzy--backend-prefix-filter (backend)
+  "Return prefix for each BACKEND while doing the first basic filerting.
+
+This is some what the opposite to function `company-fuzzy--backend-prefix-get'
+since it's try get as much candidates as possible, but this function returns
+a prefix that can filter out some obvious impossible candidates."
+  (cl-case backend
     (`company-files (company-fuzzy--valid-prefix backend))
+    (`company-paths (company-fuzzy--backend-prefix 'company-files 'match))
     (t (company-fuzzy--backend-prefix backend 'match))))
 
 (defun company-fuzzy--backend-prefix-match (backend)
@@ -519,6 +528,10 @@ does best describe the for this candidate."
                  (len-splitted (length splitted))
                  (last (nth (1- len-splitted) splitted)))
        last))
+    (`company-paths
+     (when-let ((prefix (ht-get company-fuzzy--prefixes backend)))
+       (if (string-suffix-p "/" prefix) 'anything
+         (nth 0 (last (split-string prefix "/" t))))))
     (t company-fuzzy--prefix)))
 
 (defun company-fuzzy--backend-prefix-get (backend)
@@ -547,7 +560,13 @@ P.S.  Not all backend work this way."
            (setq new-prefix
                  (substring prefix 0 (- (length prefix) (length last)))))
          new-prefix)))
+    (`company-paths
+     (when-let ((prefix (ht-get company-fuzzy--prefixes backend)))
+       (if (string-suffix-p "/" prefix) prefix
+         (file-name-directory prefix))))
     (t
+     ;; Return an empty string or first character is likely going to return a
+     ;; full list of candaidates. And this is what we want.
      (when (ht-get company-fuzzy--prefixes backend)
        company-fuzzy--prefix-first))))
 
@@ -560,8 +579,9 @@ P.S.  Not all backend work this way."
   "Get the BACKEND prefix by TYPE."
   (cl-case type
     (`complete (company-fuzzy--backend-prefix-complete backend))
-    (`match (company-fuzzy--backend-prefix-match backend))
-    (`get (company-fuzzy--backend-prefix-get backend))))
+    (`filter   (company-fuzzy--backend-prefix-filter backend))
+    (`match    (company-fuzzy--backend-prefix-match backend))
+    (`get      (company-fuzzy--backend-prefix-get backend))))
 
 ;;
 ;; (@* "Fuzzy Matching" )
@@ -640,19 +660,19 @@ Insert .* between each char."
 (defun company-fuzzy--candidates-from-backend (backend)
   "Do fuzzy matching for current BACKEND."
   (let ((prefix-get (company-fuzzy--backend-prefix backend 'get))
-        (prefix-com (company-fuzzy--backend-prefix backend 'complete))
+        (prefix-fil (company-fuzzy--backend-prefix backend 'filter))
         temp-candidates)
     (when prefix-get
       (setq temp-candidates (company-fuzzy--call-backend backend 'candidates prefix-get)))
     ;; NOTE: Do the very basic filtering for speed up.
     ;;
-    ;; The function `company-fuzzy--match-string' does the very first
-    ;; basic filtering in order to lower the performance before sending
-    ;; to function scoring engine.
+    ;; The function `company-fuzzy--match-string' does the very first basic
+    ;; filtering in order to lower the performance before sending to function
+    ;; scoring engine.
     (when (and (not company-fuzzy--is-trigger-prefix-p)
                (company-fuzzy--valid-candidates-p temp-candidates)
-               prefix-com)
-      (setq temp-candidates (company-fuzzy--match-string prefix-com temp-candidates)))
+               prefix-fil)
+      (setq temp-candidates (company-fuzzy--match-string prefix-fil temp-candidates)))
     ;; NOTE: Made the final completion.
     (company-fuzzy--collect-candidates backend temp-candidates)))
 
