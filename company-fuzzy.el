@@ -6,7 +6,7 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; URL: https://github.com/jcs-elpa/company-fuzzy
 ;; Version: 1.4.0
-;; Package-Requires: ((emacs "26.1") (company "0.8.12") (s "1.12.0") (ht "2.0"))
+;; Package-Requires: ((emacs "26.1") (company "0.8.12") (s "1.12.0") (ht "2.0") (list-utils "0.4.6"))
 ;; Keywords: matching auto-complete complete fuzzy
 
 ;; This file is NOT part of GNU Emacs.
@@ -38,6 +38,7 @@
 (require 'company)
 (require 'ht)
 (require 's)
+(require 'list-utils)
 
 (defgroup company-fuzzy nil
   "Fuzzy matching for `company-mode'."
@@ -751,6 +752,28 @@ Insert .* between each char."
               company-fuzzy--recorded-backends (cl-remove backend company-fuzzy--recorded-backends)))
     (make-local-variable 'company-backends)
     (setq company-backends (cl-remove backend company-backends)))
+  (company-fuzzy--backend-organize))
+
+;;;###autoload
+(defun company-fuzzy-backend-add-before (backend target)
+  "Add the BACKEND before the TARGET backend."
+  (if company-fuzzy-mode
+      (progn
+        (list-utils-insert-before company-fuzzy--backends target backend)
+        (list-utils-insert-before company-fuzzy--recorded-backends target backend))
+    (make-local-variable 'company-backends)
+    (list-utils-insert-before company-backends target backend))
+  (company-fuzzy--backend-organize))
+
+;;;###autoload
+(defun company-fuzzy-backend-add-after (backend target)
+  "Add the BACKEND after the TARGET backend."
+  (if company-fuzzy-mode
+      (progn
+        (list-utils-insert-after company-fuzzy--backends target backend)
+        (list-utils-insert-after company-fuzzy--recorded-backends target backend))
+    (make-local-variable 'company-backends)
+    (list-utils-insert-after company-backends target backend))
   (company-fuzzy--backend-organize))
 
 ;;

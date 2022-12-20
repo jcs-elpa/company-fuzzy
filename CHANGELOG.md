@@ -15,6 +15,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 * Call prefix backend to respect their rules (0a814694a5f6ed12926de07f29d04850789f19e2)
 * Handle `lsp-mode` and `eglot` by default (3c8c960b4e5341f6806cf43aa794c0798051222d)
 * feat: Work with `company-paths` (#34)
+* Add method to add backend between backends (#36)
 
 ## 1.4.0
 > Released Jan 27, 2022
