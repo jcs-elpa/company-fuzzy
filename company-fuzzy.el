@@ -735,7 +735,7 @@ Insert .* between each char."
   (if company-fuzzy-mode
       (setq company-fuzzy--backends (delete-dups company-fuzzy--backends)
             company-fuzzy--recorded-backends (delete-dups company-fuzzy--recorded-backends))
-    (setq company-backends (cl-remove-duplicates company-backends))))
+    (setq company-backends (delete-dups company-backends))))
 
 ;;;###autoload
 (defun company-fuzzy-backend-add (backend)
