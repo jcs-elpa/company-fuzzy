@@ -15,7 +15,6 @@
 (depends-on "company")
 (depends-on "s")
 (depends-on "ht")
-(depends-on "list-utils")
 
 (development
  (depends-on "ert-runner"))

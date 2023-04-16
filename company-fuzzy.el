@@ -6,7 +6,7 @@
 ;; Author: Shen, Jen-Chieh <jcs090218@gmail.com>
 ;; URL: https://github.com/jcs-elpa/company-fuzzy
 ;; Version: 1.4.0
-;; Package-Requires: ((emacs "26.1") (company "0.8.12") (s "1.12.0") (ht "2.0") (list-utils "0.4.6"))
+;; Package-Requires: ((emacs "26.1") (company "0.8.12") (s "1.12.0") (ht "2.0"))
 ;; Keywords: matching auto-complete complete fuzzy
 
 ;; This file is NOT part of GNU Emacs.
@@ -38,7 +38,6 @@
 (require 'company)
 (require 'ht)
 (require 's)
-(require 'list-utils)
 
 (defgroup company-fuzzy nil
   "Fuzzy matching for `company-mode'."
@@ -760,15 +759,42 @@ Insert .* between each char."
     (setq company-backends (cl-remove backend company-backends)))
   (company-fuzzy--backend-organize))
 
+(defun company-fuzzy--insert-to (list elm n)
+  "Insert into list LIST an element ELM at index N.
+
+If N is 0, ELM is inserted before the first element.
+
+The resulting list is returned.  As the list contents is mutated
+in-place, the old list reference does not remain valid."
+  (let* ((padded-list (cons nil list))
+         (c (nthcdr n padded-list)))
+    (setcdr c (cons elm (cdr c)))
+    (cdr padded-list)))
+
+(defun company-fuzzy--insert-before (list elm new-elm)
+  "Add a NEW-ELM to the LIST before ELM."
+  (let ((position (or (cl-position elm list :test 'equal) 0)))
+    (company-fuzzy--insert-to list new-elm position)))
+
+(defun company-fuzzy--insert-after (list elm new-elm)
+  "Add a NEW-ELM to the LIST after ELM."
+  (let ((position (or (cl-position elm list :test 'equal) 0)))
+    (company-fuzzy--insert-to list new-elm (1+ position))))
+
 ;;;###autoload
 (defun company-fuzzy-backend-add-before (backend target)
   "Add the BACKEND before the TARGET backend."
   (company-fuzzy--ensure-local)
   (if company-fuzzy-mode
-      (progn
-        (list-utils-insert-before company-fuzzy--backends target backend)
-        (list-utils-insert-before company-fuzzy--recorded-backends target backend))
-    (list-utils-insert-before company-backends target backend))
+      (setq company-fuzzy--backends
+            (company-fuzzy--insert-before company-fuzzy--backends
+                                          target backend)
+            company-fuzzy--recorded-backends
+            (company-fuzzy--insert-before company-fuzzy--recorded-backends
+                                          target backend))
+    (setq company-backends
+          (company-fuzzy--insert-before company-backends
+                                        target backend)))
   (company-fuzzy--backend-organize))
 
 ;;;###autoload
@@ -776,10 +802,15 @@ Insert .* between each char."
   "Add the BACKEND after the TARGET backend."
   (company-fuzzy--ensure-local)
   (if company-fuzzy-mode
-      (progn
-        (list-utils-insert-after company-fuzzy--backends target backend)
-        (list-utils-insert-after company-fuzzy--recorded-backends target backend))
-    (list-utils-insert-after company-backends target backend))
+      (setq company-fuzzy--backends
+            (company-fuzzy--insert-after company-fuzzy--backends
+                                         target backend)
+            company-fuzzy--recorded-backends
+            (company-fuzzy--insert-after company-fuzzy--recorded-backends
+                                         target backend))
+    (setq company-backends
+          (company-fuzzy--insert-after company-backends
+                                       target backend)))
   (company-fuzzy--backend-organize))
 
 ;;
