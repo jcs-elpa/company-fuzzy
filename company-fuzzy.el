@@ -725,6 +725,12 @@ Insert .* between each char."
 ;; (@* "Users" )
 ;;
 
+(defun company-fuzzy--ensure-local ()
+  "Ensure modified variable effect locally."
+  (make-local-variable 'company-fuzzy--backends)
+  (make-local-variable 'company-fuzzy--recorded-backends)
+  (make-local-variable 'company-backends))
+
 (defun company-fuzzy--backend-organize ()
   "Organize backend after modified the backend list."
   (if company-fuzzy-mode
@@ -735,44 +741,44 @@ Insert .* between each char."
 ;;;###autoload
 (defun company-fuzzy-backend-add (backend)
   "Safe way to add BACKEND."
+  (company-fuzzy--ensure-local)
   (if company-fuzzy-mode
       (progn
         (add-to-list 'company-fuzzy--backends backend t)
         (add-to-list 'company-fuzzy--recorded-backends backend t))
-    (make-local-variable 'company-backends)
     (add-to-list 'company-backends backend t))
   (company-fuzzy--backend-organize))
 
 ;;;###autoload
 (defun company-fuzzy-backend-remove (backend)
   "Safe way to remove BACKEND."
+  (company-fuzzy--ensure-local)
   (if company-fuzzy-mode
       (progn
         (setq company-fuzzy--backends (cl-remove backend company-fuzzy--backends)
               company-fuzzy--recorded-backends (cl-remove backend company-fuzzy--recorded-backends)))
-    (make-local-variable 'company-backends)
     (setq company-backends (cl-remove backend company-backends)))
   (company-fuzzy--backend-organize))
 
 ;;;###autoload
 (defun company-fuzzy-backend-add-before (backend target)
   "Add the BACKEND before the TARGET backend."
+  (company-fuzzy--ensure-local)
   (if company-fuzzy-mode
       (progn
         (list-utils-insert-before company-fuzzy--backends target backend)
         (list-utils-insert-before company-fuzzy--recorded-backends target backend))
-    (make-local-variable 'company-backends)
     (list-utils-insert-before company-backends target backend))
   (company-fuzzy--backend-organize))
 
 ;;;###autoload
 (defun company-fuzzy-backend-add-after (backend target)
   "Add the BACKEND after the TARGET backend."
+  (company-fuzzy--ensure-local)
   (if company-fuzzy-mode
       (progn
         (list-utils-insert-after company-fuzzy--backends target backend)
         (list-utils-insert-after company-fuzzy--recorded-backends target backend))
-    (make-local-variable 'company-backends)
     (list-utils-insert-after company-backends target backend))
   (company-fuzzy--backend-organize))
 
