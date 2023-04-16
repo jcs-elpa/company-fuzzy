@@ -735,7 +735,7 @@ Insert .* between each char."
   (if company-fuzzy-mode
       (setq company-fuzzy--backends (delete-dups company-fuzzy--backends)
             company-fuzzy--recorded-backends (delete-dups company-fuzzy--recorded-backends))
-    (setq company-backends (delete-dups company-backends))))
+    (setq company-backends (cl-remove-duplicates company-backends))))
 
 ;;;###autoload
 (defun company-fuzzy-backend-add (backend)
@@ -766,7 +766,7 @@ If N is 0, ELM is inserted before the first element.
 
 The resulting list is returned.  As the list contents is mutated
 in-place, the old list reference does not remain valid."
-  (let* ((padded-list (cons nil list))
+  (let* ((padded-list (cons nil (copy-sequence list)))
          (c (nthcdr n padded-list)))
     (setcdr c (cons elm (cdr c)))
     (cdr padded-list)))
