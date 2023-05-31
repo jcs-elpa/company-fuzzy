@@ -16,6 +16,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 * Handle `lsp-mode` and `eglot` by default (3c8c960b4e5341f6806cf43aa794c0798051222d)
 * feat: Work with `company-paths` (#34)
 * Add method to add backend between backends (#36)
+* Ensure backend name in other way (85dd0a7852db70673d70387a834af01ed705c3f7)
 
 ## 1.4.0
 > Released Jan 27, 2022
