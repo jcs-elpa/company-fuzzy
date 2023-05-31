@@ -317,7 +317,12 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
 
 (defun company-fuzzy--get-backend-string (backend)
   "Get BACKEND's as a string."
-  (if backend (s-replace "company-" "" (symbol-name backend)) ""))
+  (if backend
+      (let ((name (symbol-name backend)))
+        (setq name (s-replace "company-" "" name)
+              name (s-replace "-company" "" name))
+        name)
+    ""))
 
 (defun company-fuzzy--backend-string (candidate backend)
   "Form the BACKEND string by CANDIDATE."
