@@ -333,7 +333,7 @@ To test compilation:
 $ eask compile
 ```
 
-The following steps are optional, but we recommend you to follow these lint results!
+**🪧 The following steps are optional, but we recommend you follow these lint results!**
 
 The built-in `checkdoc` linter:
 
@@ -349,7 +349,7 @@ $ eask lint package
 
 *📝 P.S. For more information, find the Eask manual at https://emacs-eask.github.io/.*
 
-# License
+## ⚜️ License
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
