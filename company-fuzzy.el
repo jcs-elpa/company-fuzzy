@@ -154,6 +154,8 @@
 (declare-function sublime-fuzzy-score "ext:sublime-fuzzy.el")
 (declare-function sublime-fuzzy-load-dyn "ext:sublime-fuzzy.el")
 
+(declare-function company-emmet--prefix "ext:company-emmet.el")
+
 ;;
 ;; (@* "Mode" )
 ;;
@@ -569,6 +571,7 @@ P.S.  Not all backend work this way."
      (when-let ((prefix (ht-get company-fuzzy--prefixes backend)))
        (if (string-suffix-p "/" prefix) prefix
          (file-name-directory prefix))))
+    (`company-emmet (company-emmet--prefix))
     (t
      ;; Return an empty string or first character is likely going to return a
      ;; full list of candaidates. And this is what we want.
