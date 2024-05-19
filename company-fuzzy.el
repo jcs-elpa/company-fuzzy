@@ -520,7 +520,8 @@ For instance, if there is a candidate function `buffer-file-name' and with
 current prefix `bfn'.  It will just return `bfn' because the current prefix
 does best describe the for this candidate."
   (cl-case backend
-    ((company-capf) (company-fuzzy--valid-prefix backend))
+    ((company-capf) (or (company-fuzzy--valid-prefix backend)
+                        'anything))
     (`company-c-headers
      (when-let ((prefix (ht-get company-fuzzy--prefixes backend)))
        ;; Skip the first < or " symbol
