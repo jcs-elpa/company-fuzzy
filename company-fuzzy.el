@@ -358,8 +358,7 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
   (unless annotation-p
     (let* ((str-len (length str))
            (prefix (company-fuzzy--backend-prefix-candidate str 'match))
-           (prefix (if (stringp prefix)  ; this will handle 'anything symbol type
-                       prefix ""))
+           (prefix (company-fuzzy--validate-prefix prefix))
            (selection (or company-selection 0))
            (cur-selection (nth selection company-candidates))
            (splitted-section (remove "" (split-string str " ")))
@@ -389,7 +388,8 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
   "Sort CANDIDATES that match prefix on top of all other selection."
   (let (prefix-matches prefix)
     (dolist (cand candidates)
-      (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match))
+      (setq prefix (company-fuzzy--backend-prefix-candidate cand 'match)
+            prefix (company-fuzzy--validate-prefix prefix))
       (when (company-fuzzy--string-prefix-p prefix cand)
         (push cand prefix-matches)
         (setq candidates (remove cand candidates))))
@@ -489,6 +489,11 @@ If optional argument FLIP is non-nil, reverse query and pattern order."
     (if (stringp prefix) prefix
       (thing-at-point 'symbol))))  ; Fallback
 
+(defun company-fuzzy--validate-prefix (prefix)
+  "Validate the PREFIX to proper string."
+  (if (stringp prefix)  ; this will handle 'anything symbol type
+      prefix ""))
+
 (defun company-fuzzy--backend-prefix-complete (backend)
   "Return prefix for each BACKEND while doing completion.
 
@@ -506,6 +511,9 @@ This is some what the opposite to function `company-fuzzy--backend-prefix-get'
 since it's try get as much candidates as possible, but this function returns
 a prefix that can filter out some obvious impossible candidates."
   (cl-case backend
+    (`company-capf (let* ((prefix (company-fuzzy--backend-prefix backend 'match))
+                          (prefix (company-fuzzy--validate-prefix prefix)))
+                     prefix))
     (`company-files (company-fuzzy--valid-prefix backend))
     (`company-paths (company-fuzzy--backend-prefix 'company-files 'match))
     (t (company-fuzzy--backend-prefix backend 'match))))
