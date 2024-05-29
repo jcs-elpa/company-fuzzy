@@ -61,6 +61,11 @@
                  (const :tag "sublime-fuzzy" sublime-fuzzy))
   :group 'company-fuzzy)
 
+(defcustom company-fuzzy-reset-selection nil
+  "If non-nil, reset the selection to default."
+  :type 'boolean
+  :group 'company-fuzzy)
+
 (defcustom company-fuzzy-prefix-on-top t
   "Have the matching prefix on top."
   :type 'boolean
@@ -88,7 +93,7 @@
   :type 'string
   :group 'company-fuzzy)
 
-(defcustom company-fuzzy-passthrough-backends '()
+(defcustom company-fuzzy-passthrough-backends nil
   "List of backends that already are fuzzy, so no filtering of candidates is done."
   :type 'list
   :group 'company-fuzzy)
@@ -430,6 +435,8 @@ If optional argument FLIP is non-nil, reverse query and pattern order."
   ;; IMPORTANT: Since the command `candidates' will change by `company-mode',
   ;; we manually set the candidates here so we get can consistent result.
   (setq candidates (company-fuzzy--ht-all-candidates))
+  (when company-fuzzy-reset-selection
+    (setq company-selection company-selection-default))
   ;; Don't score when it start fresh, e.g. completing a function name in Java
   ;; with the . (dot) symbol
   (unless company-fuzzy--is-trigger-prefix-p
