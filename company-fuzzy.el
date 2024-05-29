@@ -61,11 +61,6 @@
                  (const :tag "sublime-fuzzy" sublime-fuzzy))
   :group 'company-fuzzy)
 
-(defcustom company-fuzzy-reset-selection nil
-  "If non-nil, reset the selection to default."
-  :type 'boolean
-  :group 'company-fuzzy)
-
 (defcustom company-fuzzy-prefix-on-top t
   "Have the matching prefix on top."
   :type 'boolean
@@ -106,6 +101,11 @@
 (defcustom company-fuzzy-completion-separator "[ \t\r\n]\\|\\_<\\|\\_>"
   "Use to identify the completion unit."
   :type 'string
+  :group 'company-fuzzy)
+
+(defcustom company-fuzzy-reset-selection nil
+  "If non-nil, reset the selection to default."
+  :type 'boolean
   :group 'company-fuzzy)
 
 (defface company-fuzzy-annotation-face

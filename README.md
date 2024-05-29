@@ -39,6 +39,7 @@ hence all possible candidates will be shown in the auto-complete menu.
   :hook (company-mode . company-fuzzy-mode)
   :init
   (setq company-fuzzy-sorting-backend 'flx
+        company-fuzzy-reset-selection t
         company-fuzzy-prefix-on-top nil
         company-fuzzy-trigger-symbols '("." "->" "<" "\"" "'" "@")))
 ```
@@ -54,16 +55,15 @@ Or you can just enable it in any specific buffer/mode you want.
 (company-fuzzy-mode 1)
 ```
 
-Make sure you call either of these functions after all
-`company-backends` are set and config properly. Because
-this plugin will replace all backends to this minor mode
-specific backend (basically take all backends away, so
-this mode could combine all sources and do the fuzzy work).
+Make sure you have called either of these functions after all
+`company-backends` are set and config properly. Because this plugin will
+replace all backends to this minor mode specific backend (basically take all
+backends away, so this mode could combine all sources and do the fuzzy work).
 
 ### 🔍 Sorting/Scoring backend
 
 There are multiple sorting algorithms for auto-completion. You can choose your
-own backend by customize `company-fuzzy-sorting-backend` variable like this.
+backend by customizing the `company-fuzzy-sorting-backend` variable like this.
 
 ```el
 (setq company-fuzzy-sorting-backend 'alphabetic)
@@ -95,7 +95,7 @@ Or implements your sorting algorithm yourself? Assgin the function to
 
 ### 🔍 Prefix On Top
 
-If you wish the prefix matchs on top of all other selection, customize
+If you wish the prefix matechs on top of all other selections, customize
 this variable to `t` like the line below.
 
 ```el
@@ -105,7 +105,7 @@ this variable to `t` like the line below.
 *P.S.
 If you set `company-fuzzy-sorting-backend` to `'flx` then
 you probably don't need this to be on because the `flx` scoring engine
-already take care of that!*
+already takes care of that!*
 
 ### 🔍 For annotation
 
@@ -115,7 +115,7 @@ You can toggle `company-fuzzy-show-annotation` for showing annotation or not.
 (setq company-fuzzy-show-annotation t)
 ```
 
-You can also customize annotation using `format` variable.
+You can also customize annotation using the `format` variable.
 
 * `company-fuzzy-annotation-format` => ` <%s>`
 
@@ -128,21 +128,28 @@ of the backends from polluting the fuzzy matching.
 (setq company-fuzzy-passthrough-backends '(company-capf))
 ```
 
-*P.S. This is design to use with semantic backends, like [lsp-mode](https://github.com/emacs-lsp/lsp-mode)
-(uses [company-capf](https://github.com/company-mode/company-mode))
-, or [eglot](https://github.com/joaotavora/eglot), etc.*
+*P.S. This is designed to be used with semantic backends, like [lsp-mode][]
+(uses [company-capf][company]), or [eglot][], etc.*
 
 ## 💬 Details
 
-Since [company](https://github.com/company-mode/company-mode)
-granted most control to users, every company backend developer
-has different method of implementing company backend. It is hard
-to manage all backends to one by varies of rules.
+Since [company][] grants most control to users, every company backend developer
+has a different method of implementing the company backend. It is hard to manage
+all backends to one by various rules.
+
+### 🔍 Reset the selection
+
+If you are using an intelligent fuzzy matching algorithm, it is more intuitive
+to reset the selected candidate to the first candidate.
+
+```elisp
+(setq company-fuzzy-reset-selection t)
+```
 
 ## Recommended Settings
 
-There are something that `company` design it weirdly, in order to make this
-plugin work smoothly I would recommend these `company`'s variables to be set.
+The company has designed something oddly to achieve this. The plugin operates
+smoothly, and I suggest configuring these company variables.
 
 ```el
 (use-package company
@@ -365,3 +372,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 See [`LICENSE`](./LICENSE.txt) for details.
+
+<!-- Links -->
+
+[company]: https://github.com/company-mode/company-mode
+[lsp-mode]: https://github.com/emacs-lsp/lsp-mode
+[eglot]: https://github.com/joaotavora/eglot
