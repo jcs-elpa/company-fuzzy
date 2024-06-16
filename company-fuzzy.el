@@ -128,10 +128,10 @@
 (defvar-local company-fuzzy--is-trigger-prefix-p nil
   "Flag to see if currently completion having a valid prefix.")
 
-(defvar-local company-fuzzy--prefixes (make-hash-table)
+(defvar-local company-fuzzy--prefixes (make-hash-table :test 'equal)
   "Map for each backend's prefix.")
 
-(defvar-local company-fuzzy--candidates (make-hash-table)
+(defvar-local company-fuzzy--candidates (make-hash-table :test 'equal)
   "Map for each bakend's candidates.")
 
 ;;
@@ -406,7 +406,7 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
   "Sort CANDIDATES with function call FNC.
 
 If optional argument FLIP is non-nil, reverse query and pattern order."
-  (let ((scoring-table (make-hash-table)) scoring-keys)
+  (let ((scoring-table (make-hash-table :test 'equal)) scoring-keys)
     (dolist (cand candidates)
       (when-let* ((prefix (company-fuzzy--backend-prefix-candidate cand 'match))
                   (scoring (or (equal prefix 'anything)
