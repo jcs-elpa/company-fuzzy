@@ -301,13 +301,6 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
     (setq result-lst (reverse result-lst))
     (cl-remove-duplicates result-lst)))
 
-(defun company-fuzzy--get-backend-by-candidate (candidate)
-  "Return the backend symbol by using CANDIDATE as search index."
-  (let ((match (ht-find (lambda (_backend cands)
-                          (member candidate cands))
-                        company-fuzzy--candidates)))
-    (car match)))
-
 (defun company-fuzzy--call-backend (backend command key)
   "Safely call BACKEND by COMMAND and KEY."
   (ignore-errors (funcall backend command key)))
@@ -315,7 +308,7 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
 (defun company-fuzzy--backend-command (candidate command)
   "Find the backend from the CANDIDATE then call the COMMAND."
   (unless (string-empty-p candidate)
-    (when-let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
+    (when-let ((backend (ht-get company-fuzzy--candidates candidate)))
       (company-fuzzy--call-backend backend command candidate))))
 
 ;;
@@ -349,7 +342,7 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
 
 (defun company-fuzzy--extract-annotation (candidate)
   "Extract annotation from CANDIDATE."
-  (let* ((backend (company-fuzzy--get-backend-by-candidate candidate))
+  (let* ((backend (ht-get company-fuzzy--candidates candidate))
          (backend-str (company-fuzzy--backend-string candidate backend))
          (orig-anno (company-fuzzy--source-anno-string candidate backend)))
     (concat orig-anno backend-str)))
@@ -483,7 +476,7 @@ If optional argument FLIP is non-nil, reverse query and pattern order."
   (when company-fuzzy-mode
     ;; NOTE: Here we force to change `company-prefix' so the completion
     ;; will do what we expected.
-    (let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
+    (let ((backend (ht-get company-fuzzy--candidates candidate)))
       (setq company-prefix (company-fuzzy--backend-prefix backend 'complete)))))
 
 ;;
@@ -596,7 +589,7 @@ P.S.  Not all backend work this way."
 
 (defun company-fuzzy--backend-prefix-candidate (cand type)
   "Get the backend prefix by CAND and TYPE."
-  (let ((backend (company-fuzzy--get-backend-by-candidate cand)))
+  (let ((backend (ht-get company-fuzzy--candidates cand)))
     (company-fuzzy--backend-prefix backend type)))
 
 (defun company-fuzzy--backend-prefix (backend type)
@@ -648,11 +641,7 @@ Insert .* between each char."
 
 (defun company-fuzzy--ht-all-candidates ()
   "Return all candidates from the data."
-  (let (all-candidates)
-    (ht-map (lambda (_backend cands)
-              (setq all-candidates (append all-candidates cands)))
-            company-fuzzy--candidates)
-    (delete-dups all-candidates)))
+  (ht-keys company-fuzzy--candidates))
 
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
@@ -703,7 +692,8 @@ Insert .* between each char."
 (defun company-fuzzy--register-candidates (backend candidates)
   "Register CANDIDATES with BACKEND id."
   (delete-dups candidates)
-  (ht-set company-fuzzy--candidates backend (copy-sequence candidates)))
+  (dolist (cand candidates)
+    (ht-set company-fuzzy--candidates cand backend)))
 
 (defun company-fuzzy--collect-candidates (backend candidates)
   "Collect BACKEND's CANDIDATES by it's type."
