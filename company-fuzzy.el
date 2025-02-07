@@ -252,7 +252,7 @@
   (ht-clear company-fuzzy--prefixes)
   (let ((final-len 0) final-prefix)
     (dolist (backend company-fuzzy--backends)
-      (when-let ((prefix (ignore-errors (funcall backend 'prefix))))
+      (when-let* ((prefix (ignore-errors (funcall backend 'prefix))))
         (ht-set company-fuzzy--prefixes backend prefix)
         (when-let* ((len (length prefix))
                     ((< final-len len)))
@@ -315,7 +315,7 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
 (defun company-fuzzy--backend-command (candidate command)
   "Find the backend from the CANDIDATE then call the COMMAND."
   (unless (string-empty-p candidate)
-    (when-let ((backend (company-fuzzy--get-backend-by-candidate candidate)))
+    (when-let* ((backend (company-fuzzy--get-backend-by-candidate candidate)))
       (company-fuzzy--call-backend backend command candidate))))
 
 ;;
@@ -538,7 +538,7 @@ does best describe the for this candidate."
     ((company-capf) (or (company-fuzzy--valid-prefix backend)
                         'anything))
     (`company-c-headers
-     (when-let ((prefix (ht-get company-fuzzy--prefixes backend)))
+     (when-let* ((prefix (ht-get company-fuzzy--prefixes backend)))
        ;; Skip the first < or " symbol
        (substring prefix 1 (length prefix))))
     (`company-files
@@ -552,7 +552,7 @@ does best describe the for this candidate."
                  (last (nth (1- len-splitted) splitted)))
        last))
     (`company-paths
-     (when-let ((prefix (ht-get company-fuzzy--prefixes backend)))
+     (when-let* ((prefix (ht-get company-fuzzy--prefixes backend)))
        (if (string-suffix-p "/" prefix) 'anything
          (nth 0 (last (split-string prefix "/" t))))))
     (t company-fuzzy--prefix)))
@@ -574,7 +574,7 @@ P.S.  Not all backend work this way."
      ;; Skip the < or " symbol for the first character
      (ignore-errors (substring (ht-get company-fuzzy--prefixes backend) 1 2)))
     (`company-files
-     (when-let ((prefix (ht-get company-fuzzy--prefixes backend)))
+     (when-let* ((prefix (ht-get company-fuzzy--prefixes backend)))
        (let* ((splitted (split-string prefix "/" t))
               (len-splitted (length splitted))
               (last (nth (1- len-splitted) splitted))
@@ -584,7 +584,7 @@ P.S.  Not all backend work this way."
                  (substring prefix 0 (- (length prefix) (length last)))))
          new-prefix)))
     (`company-paths
-     (when-let ((prefix (ht-get company-fuzzy--prefixes backend)))
+     (when-let* ((prefix (ht-get company-fuzzy--prefixes backend)))
        (if (string-suffix-p "/" prefix) prefix
          (file-name-directory prefix))))
     (`company-emmet (company-emmet--prefix))
