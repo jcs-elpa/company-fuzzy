@@ -254,7 +254,7 @@
     (dolist (backend company-fuzzy--backends)
       (when-let* ((prefix (ignore-errors (funcall backend 'prefix))))
         (ht-set company-fuzzy--prefixes backend prefix)
-        (when-let* ((len (length prefix))
+        (when-let* ((len (ignore-errors (length prefix)))
                     ((< final-len len)))
           (setq final-prefix prefix
                 final-len len))))
