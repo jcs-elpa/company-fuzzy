@@ -71,18 +71,18 @@ backend by customizing the `company-fuzzy-sorting-backend` variable like this.
 
 Currently supports these values,
 
-* *`none`* - Gives you the raw result.
-* *`alphabetic`* - Sort in the alphabetic order. (VSCode)
-* *`flex`* - Use library [flex](https://github.com/jcs-elpa/flex) as matching engine.
-* *`flx`* - Use library [flx](https://github.com/lewang/flx) as matching engine. (Sublime Text)
-* *`flx-rs`* - Use library [flx-rs](https://github.com/jcs-elpa/flx-rs) as matching engine. (Sublime Text)
-* *`flxy`* - Use library [flxy](https://github.com/jcs-elpa/flxy) as matching engine.
-* *`fuz-skim`* - Use library [fuz.el](https://github.com/rustify-emacs/fuz.el)'s skim algorithm.
-* *`fuz-clangd`* - Use library [fuz.el](https://github.com/rustify-emacs/fuz.el)'s clangd algorithm.
-* *`fuz-bin-skim`* - Use library [fuz-bin](https://github.com/jcs-elpa/fuz-bin)'s skim algorithm.
-* *`fuz-bin-clangd`* - Use library [fuz-bin](https://github.com/jcs-elpa/fuz-bin)'s clangd algorithm.
-* *`liquidmetal`* - Use library [liquidmetal](https://github.com/jcs-elpa/liquidmetal) similar to [Quicksilver](https://qsapp.com/) algorithm.
-* *`sublime-fuzzy`* - Use library [sublime-fuzzy](https://github.com/jcs-elpa/sublime-fuzzy) as matching engine. (Sublime Text)
+- *`none`* - Gives you the raw result.
+- *`alphabetic`* - Sort in the alphabetic order. (VSCode)
+- *`flex`* - Use library [flex](https://github.com/jcs-elpa/flex) as matching engine.
+- *`flx`* - Use library [flx](https://github.com/lewang/flx) as matching engine. (Sublime Text)
+- *`flx-rs`* - Use library [flx-rs](https://github.com/jcs-elpa/flx-rs) as matching engine. (Sublime Text)
+- *`flxy`* - Use library [flxy](https://github.com/jcs-elpa/flxy) as matching engine.
+- *`fuz-skim`* - Use library [fuz.el](https://github.com/rustify-emacs/fuz.el)'s skim algorithm.
+- *`fuz-clangd`* - Use library [fuz.el](https://github.com/rustify-emacs/fuz.el)'s clangd algorithm.
+- *`fuz-bin-skim`* - Use library [fuz-bin](https://github.com/jcs-elpa/fuz-bin)'s skim algorithm.
+- *`fuz-bin-clangd`* - Use library [fuz-bin](https://github.com/jcs-elpa/fuz-bin)'s clangd algorithm.
+- *`liquidmetal`* - Use library [liquidmetal](https://github.com/jcs-elpa/liquidmetal) similar to [Quicksilver](https://qsapp.com/) algorithm.
+- *`sublime-fuzzy`* - Use library [sublime-fuzzy](https://github.com/jcs-elpa/sublime-fuzzy) as matching engine. (Sublime Text)
 
 Or implements your sorting algorithm yourself? Assgin the function to
 `company-fuzzy-sorting-function` variable like this.
@@ -324,20 +324,20 @@ To run the test locally, you will need the following tools:
 Install all dependencies and development dependencies:
 
 ```sh
-$ eask install-deps --dev
+eask install-deps --dev
 ```
 
 To test the package's installation:
 
 ```sh
-$ eask package
-$ eask install
+eask package
+eask install
 ```
 
 To test compilation:
 
 ```sh
-$ eask compile
+eask compile
 ```
 
 **🪧 The following steps are optional, but we recommend you follow these lint results!**
@@ -345,13 +345,13 @@ $ eask compile
 The built-in `checkdoc` linter:
 
 ```sh
-$ eask lint checkdoc
+eask lint checkdoc
 ```
 
 The standard `package` linter:
 
 ```sh
-$ eask lint package
+eask lint package
 ```
 
 *📝 P.S. For more information, find the Eask manual at https://emacs-eask.github.io/.*
