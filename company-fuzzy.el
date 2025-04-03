@@ -90,12 +90,12 @@
 
 (defcustom company-fuzzy-passthrough-backends nil
   "List of backends that already are fuzzy, so no filtering of candidates is done."
-  :type 'list
+  :type '(list symbol)
   :group 'company-fuzzy)
 
 (defcustom company-fuzzy-trigger-symbols '("." "->")
   "List of symbols that allow trigger company when there is no prefix."
-  :type 'list
+  :type '(list string)
   :group 'company-fuzzy)
 
 (defcustom company-fuzzy-completion-separator "[ \t\r\n]\\|\\_<\\|\\_>"
