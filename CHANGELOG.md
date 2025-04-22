@@ -18,6 +18,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 * Add method to add backend between backends (#36)
 * Ensure backend name in other way (85dd0a7852db70673d70387a834af01ed705c3f7)
 * feat: Add the reset selection option (6a147b5ef93db50462968a816c7feff638d4386e)
+* feat: Compatible to latest `company-1.0.0` (#42)
 
 ## 1.4.0
 > Released Jan 27, 2022
