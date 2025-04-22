@@ -9,6 +9,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 > Released N/A
 
 * fix: Also apply suffix to passthrough backends (82ed914f7fc3f82c9149e3b06c6fea935aa52efa)
+* fix: No empty filter on match prefix (955c6b31f679fcf2af6af646339193730ac0b816)
 
 ## 2.0.0
 > Released Apr 21, 2025
