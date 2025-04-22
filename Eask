@@ -1,5 +1,5 @@
 (package "company-fuzzy"
-         "2.0.0"
+         "2.0.1"
          "Fuzzy matching for `company-mode'")
 
 (website-url "https://github.com/jcs-elpa/company-fuzzy")
