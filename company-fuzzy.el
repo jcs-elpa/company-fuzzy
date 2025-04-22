@@ -704,9 +704,12 @@ Insert .* between each char."
 (defun company-fuzzy--candidates-from-passthrough-backend (backend)
   "Use candidates of already fuzzy BACKEND as is."
   (let ((prefix-get (company-fuzzy--backend-prefix backend 'get))
+        (suffix-get (company-fuzzy--backend-suffix backend 'get))
         temp-candidates)
     (when prefix-get
-      (setq temp-candidates (company-fuzzy--call-backend backend 'candidates prefix-get)))
+      (setq temp-candidates (company-fuzzy--call-backend backend 'candidates
+                                                         prefix-get
+                                                         suffix-get)))
     (company-fuzzy--collect-candidates backend temp-candidates)))
 
 (defun company-fuzzy--candidates-from-backend (backend)
