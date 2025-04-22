@@ -8,7 +8,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## 2.0.1 (Unreleased)
 > Released N/A
 
-* N/A
+* fix: Also apply suffix to passthrough backends (82ed914f7fc3f82c9149e3b06c6fea935aa52efa)
 
 ## 2.0.0
 > Released Apr 21, 2025
