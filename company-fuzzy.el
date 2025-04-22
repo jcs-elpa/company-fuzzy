@@ -506,7 +506,9 @@ behaviour.  The arguments FUNC and ARGS are for the original execution."
 (defun company-fuzzy--valid-prefix (backend)
   "Guess the current BACKEND prefix."
   (let ((prefix (ht-get company-fuzzy--prefixes backend)))
-    (if (stringp prefix) prefix
+    (if (and (stringp prefix)
+             (not (string-empty-p prefix)))  ; Can't be empty.
+        prefix
       (thing-at-point 'symbol))))  ; Fallback
 
 (defun company-fuzzy--validate-prefix (prefix)
