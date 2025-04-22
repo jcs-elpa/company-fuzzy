@@ -1,3 +1,5 @@
+;; -*- mode: eask; lexical-binding: t -*-
+
 (package "company-fuzzy"
          "2.0.1"
          "Fuzzy matching for `company-mode'")
