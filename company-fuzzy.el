@@ -119,6 +119,10 @@
 (defvar-local company-fuzzy--prefix-first ""
   "Store generic prefix's first character for caching.")
 
+(defvar-local company-fuzzy--triggers-max-length nil
+  "Record the maximum string length from the variable
+`company-fuzzy-trigger-symbols'.")
+
 (defvar-local company-fuzzy--backends nil
   "Company fuzzy backends we are going to use.")
 
@@ -503,13 +507,38 @@ behaviour.  The arguments FUNC and ARGS are for the original execution."
 ;; (@* "Prefix" )
 ;;
 
+(defun company-fuzzy--triggers-max-length ()
+  "Return the maximum string length from the variable
+`company-fuzzy-trigger-symbols'."
+  (let ((len 0))
+    (mapc (lambda (symbol)
+            (setq len (max len (length symbol))))
+          company-fuzzy-trigger-symbols)
+    len))
+
 (defun company-fuzzy--valid-prefix (backend)
   "Guess the current BACKEND prefix."
-  (let ((prefix (ht-get company-fuzzy--prefixes backend)))
-    (if (and (stringp prefix)
-             (not (string-empty-p prefix)))  ; Can't be empty.
-        prefix
-      (thing-at-point 'symbol))))  ; Fallback
+  (cond
+   ((when-let* ((prefix (ht-get company-fuzzy--prefixes backend))
+                ((and (stringp prefix)
+                      ;; Can't be empty.
+                      (not (string-empty-p prefix)))))
+      prefix))
+   ((when-let* ((len (or company-fuzzy--triggers-max-length
+                         (progn
+                           (setq company-fuzzy--triggers-max-length
+                                 (company-fuzzy--triggers-max-length))
+                           company-fuzzy--triggers-max-length)))
+                (start (- (point) len))
+                (end (point))
+                (trigger (buffer-substring-no-properties start end))
+                ;; XXX: Can we improve this?
+                ((cl-some (lambda (symbol)
+                            (string-suffix-p symbol trigger))
+                          company-fuzzy-trigger-symbols)))
+      'anything))
+   ;; Fallback
+   (t (thing-at-point 'symbol))))
 
 (defun company-fuzzy--validate-prefix (prefix)
   "Validate the PREFIX to proper string."
@@ -550,8 +579,7 @@ For instance, if there is a candidate function `buffer-file-name' and with
 current prefix `bfn'.  It will just return `bfn' because the current prefix
 does best describe the for this candidate."
   (cl-case backend
-    ((company-capf) (or (company-fuzzy--valid-prefix backend)
-                        'anything))
+    ((company-capf) (company-fuzzy--valid-prefix backend))
     (`company-c-headers
      (when-let* ((prefix (ht-get company-fuzzy--prefixes backend)))
        ;; Skip the first < or " symbol
