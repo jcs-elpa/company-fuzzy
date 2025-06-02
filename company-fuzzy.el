@@ -531,7 +531,7 @@ behaviour.  The arguments FUNC and ARGS are for the original execution."
                            company-fuzzy--triggers-max-length)))
                 (start (- (point) len))
                 (end (point))
-                (trigger (buffer-substring-no-properties start end))
+                (trigger (ignore-errors (buffer-substring-no-properties start end)))
                 ;; XXX: Can we improve this?
                 ((cl-some (lambda (symbol)
                             (string-suffix-p symbol trigger))
