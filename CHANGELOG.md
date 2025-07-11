@@ -8,23 +8,23 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## 2.0.1 (Unreleased)
 > Released N/A
 
-* fix: Also apply suffix to passthrough backends (82ed914f7fc3f82c9149e3b06c6fea935aa52efa)
-* fix: No empty filter on match prefix (955c6b31f679fcf2af6af646339193730ac0b816)
+* fix: Also apply suffix to passthrough backends ([`82ed914`](../../commit/82ed914f7fc3f82c9149e3b06c6fea935aa52efa))
+* fix: No empty filter on match prefix ([`955c6b3`](../../commit/955c6b31f679fcf2af6af646339193730ac0b816))
 
 ## 2.0.0
 > Released Apr 21, 2025
 
-* Make local hash map object work! (e63df5f47d47f335c4cdbeb66b815ada2a7161a3)
-* Fix long lasting `company-yasnippet` bug (#30)
-* Compatible to backend `company-c-headers` (#31)
-* Add use of furthest prefix (#33)
-* Call prefix backend to respect their rules (0a814694a5f6ed12926de07f29d04850789f19e2)
-* Handle `lsp-mode` and `eglot` by default (3c8c960b4e5341f6806cf43aa794c0798051222d)
-* feat: Work with `company-paths` (#34)
-* Add method to add backend between backends (#36)
-* Ensure backend name in other way (85dd0a7852db70673d70387a834af01ed705c3f7)
-* feat: Add the reset selection option (6a147b5ef93db50462968a816c7feff638d4386e)
-* feat: Compatible to latest `company-1.0.0` (#42)
+* Make local hash map object work! ([`e63df5f`](../../commit/e63df5f47d47f335c4cdbeb66b815ada2a7161a3))
+* Fix long lasting `company-yasnippet` bug ([#30](../../pull/30))
+* Compatible to backend `company-c-headers` ([#31](../../pull/31))
+* Add use of furthest prefix ([#33](../../pull/33))
+* Call prefix backend to respect their rules ([`0a81469`](../../commit/0a814694a5f6ed12926de07f29d04850789f19e2))
+* Handle `lsp-mode` and `eglot` by default ([`3c8c960`](../../commit/3c8c960b4e5341f6806cf43aa794c0798051222d))
+* feat: Work with `company-paths` ([#34](../../pull/34))
+* Add method to add backend between backends ([#36](../../pull/36))
+* Ensure backend name in other way ([`85dd0a7`](../../commit/85dd0a7852db70673d70387a834af01ed705c3f7))
+* feat: Add the reset selection option ([`6a147b5`](../../commit/6a147b5ef93db50462968a816c7feff638d4386e))
+* feat: Compatible to latest `company-1.0.0` ([#42](../../pull/42))
 
 ## 1.4.0
 > Released Jan 27, 2022
