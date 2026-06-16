@@ -314,9 +314,11 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
 
 (defun company-fuzzy--get-backend-by-candidate (candidate)
   "Return the backend symbol by using CANDIDATE as search index."
-  (let ((match (ht-find (lambda (_backend cands)
-                          (member candidate cands))
-                        company-fuzzy--candidates)))
+  (let ((match (cl-some (lambda (backend &rest _)
+                          (when-let* ((cands (ht-get company-fuzzy--candidates backend))
+                                      ((member candidate cands)))
+                            (cons backend cands)))
+                        company-fuzzy--backends)))
     (car match)))
 
 (defun company-fuzzy--call-backend (backend command arg &optional rest)
@@ -347,15 +349,15 @@ See function `string-prefix-p' for arguments PREFIX, STRING and IGNORE-CASE."
   (if (and company-fuzzy-show-annotation candidate)
       (let ((backend-str (company-fuzzy--get-backend-string backend)))
         (when (string-empty-p backend-str) (setq backend-str "unknown"))
-        (propertize
-         (format company-fuzzy-annotation-format backend-str)
-         'face 'company-fuzzy-annotation-face))
+        (propertize (format company-fuzzy-annotation-format backend-str)
+                    'face 'company-fuzzy-annotation-face))
     ""))
 
 (defun company-fuzzy--source-anno-string (candidate backend)
   "Return the source annotation string by CANDIDATE and BACKEND."
   (if (and candidate backend)
-      (company-fuzzy--call-backend backend 'annotation candidate)
+      (or (company-fuzzy--call-backend backend 'annotation candidate)
+          (company-fuzzy--call-backend 'company-capf 'annotation candidate))
     ""))
 
 (defun company-fuzzy--extract-annotation (candidate)
@@ -715,7 +717,7 @@ Insert .* between each char."
 
 (defun company-fuzzy-all-candidates ()
   "Return the list of all candidates."
-  (ht-clear company-fuzzy--candidates)  ; Clean up
+  (ht-clear company-fuzzy--candidates)  ; Clean up.
   (setq company-fuzzy--is-trigger-prefix-p (company-fuzzy--trigger-prefix-p))
   (dolist (backend company-fuzzy--backends)
     (if (or (company-fuzzy--lsp-passthrough backend)
@@ -768,7 +770,15 @@ Insert .* between each char."
 (defun company-fuzzy--register-candidates (backend candidates)
   "Register CANDIDATES with BACKEND id."
   (delete-dups candidates)
-  (ht-set company-fuzzy--candidates backend (copy-sequence candidates)))
+  (let ((cands (copy-sequence candidates)))
+    (cl-case backend
+      (`company-capf
+       (ht-set company-fuzzy--candidates
+               backend
+               (append cands
+                       (ht-get company-fuzzy--candidates backend))))
+      (t
+       (ht-set company-fuzzy--candidates backend cands)))))
 
 (defun company-fuzzy--collect-candidates (backend candidates)
   "Collect BACKEND's CANDIDATES by it's type."
